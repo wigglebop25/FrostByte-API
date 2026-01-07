@@ -187,7 +187,9 @@ func (s *Server) HealthCheckHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(response)
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		s.logger.Error("failed to encode response", err, nil)
+	}
 }
 
 // TemperatureData represents temperature readings
@@ -257,7 +259,9 @@ func (s *Server) ProcessTemperatureHandler(w http.ResponseWriter, r *http.Reques
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(response)
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		s.logger.Error("failed to encode response", err, nil)
+	}
 }
 
 // GetTemperatureStatsHandler returns temperature statistics
@@ -285,7 +289,9 @@ func (s *Server) GetTemperatureStatsHandler(w http.ResponseWriter, r *http.Reque
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(response)
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		s.logger.Error("failed to encode response", err, nil)
+	}
 }
 
 // Start starts the HTTP server

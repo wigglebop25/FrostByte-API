@@ -107,7 +107,10 @@ func TestProcessTemperatureHandler(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			body, _ := json.Marshal(tt.data)
+			body, err := json.Marshal(tt.data)
+			if err != nil {
+				t.Fatalf("failed to marshal test data: %v", err)
+			}
 			req := httptest.NewRequest(http.MethodPost, "/api/v1/temperature/process", bytes.NewReader(body))
 			w := httptest.NewRecorder()
 
@@ -262,7 +265,10 @@ func TestTemperatureConversion(t *testing.T) {
 				Conditions:  "test",
 			}
 
-			body, _ := json.Marshal(data)
+			body, err := json.Marshal(data)
+			if err != nil {
+				t.Fatalf("failed to marshal test data: %v", err)
+			}
 			req := httptest.NewRequest(http.MethodPost, "/api/v1/temperature/process", bytes.NewReader(body))
 			w := httptest.NewRecorder()
 
