@@ -182,7 +182,6 @@ func TestSecurityHeadersMiddleware(t *testing.T) {
 	expectedHeaders := map[string]string{
 		"X-Content-Type-Options":    "nosniff",
 		"X-Frame-Options":           "DENY",
-		"X-XSS-Protection":          "1; mode=block",
 		"Content-Security-Policy":   "default-src 'self'",
 		"Strict-Transport-Security": "max-age=31536000; includeSubDomains",
 	}
@@ -270,7 +269,9 @@ func TestTemperatureConversion(t *testing.T) {
 			server.ProcessTemperatureHandler(w, req)
 
 			var response map[string]interface{}
-			json.NewDecoder(w.Body).Decode(&response)
+			if err := json.NewDecoder(w.Body).Decode(&response); err != nil {
+				t.Fatalf("failed to decode response: %v", err)
+			}
 
 			tempC := response["temperature_c"].(float64)
 			if tempC < tt.expectedC-0.1 || tempC > tt.expectedC+0.1 {

@@ -47,7 +47,11 @@ func (l *Logger) Info(msg string, fields map[string]interface{}) {
 	fields["msg"] = msg
 	fields["timestamp"] = time.Now().UTC().Format(time.RFC3339)
 
-	jsonData, _ := json.Marshal(fields)
+	jsonData, err := json.Marshal(fields)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error marshaling log: %v\n", err)
+		return
+	}
 	fmt.Println(string(jsonData))
 }
 
@@ -64,7 +68,11 @@ func (l *Logger) Error(msg string, err error, fields map[string]interface{}) {
 	fields["error"] = err.Error()
 	fields["timestamp"] = time.Now().UTC().Format(time.RFC3339)
 
-	jsonData, _ := json.Marshal(fields)
+	jsonData, marshalErr := json.Marshal(fields)
+	if marshalErr != nil {
+		fmt.Fprintf(os.Stderr, "error marshaling log: %v\n", marshalErr)
+		return
+	}
 	fmt.Println(string(jsonData))
 }
 
@@ -127,7 +135,6 @@ func (s *Server) SecurityHeadersMiddleware(next http.HandlerFunc) http.HandlerFu
 		// Security headers
 		w.Header().Set("X-Content-Type-Options", "nosniff")
 		w.Header().Set("X-Frame-Options", "DENY")
-		w.Header().Set("X-XSS-Protection", "1; mode=block")
 		w.Header().Set("Content-Security-Policy", "default-src 'self'")
 		w.Header().Set("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
 
@@ -217,6 +224,7 @@ func (s *Server) ProcessTemperatureHandler(w http.ResponseWriter, r *http.Reques
 	}
 
 	// Process temperature data (convert to Celsius for standardization)
+	startProcess := time.Now()
 	celsius := data.Temperature
 	if data.Unit == "fahrenheit" {
 		celsius = (data.Temperature - 32) * 5 / 9
@@ -233,6 +241,8 @@ func (s *Server) ProcessTemperatureHandler(w http.ResponseWriter, r *http.Reques
 		severity = "cold"
 	}
 
+	processingTime := time.Since(startProcess).Milliseconds()
+
 	response := map[string]interface{}{
 		"processed_at":       time.Now().UTC().Format(time.RFC3339),
 		"location":           data.Location,
@@ -242,7 +252,7 @@ func (s *Server) ProcessTemperatureHandler(w http.ResponseWriter, r *http.Reques
 		"is_cold":            isCold,
 		"severity":           severity,
 		"conditions":         data.Conditions,
-		"processing_time_ms": 0, // Would be calculated in real implementation
+		"processing_time_ms": processingTime,
 	}
 
 	w.Header().Set("Content-Type", "application/json")

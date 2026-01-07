@@ -148,7 +148,6 @@ PORT=3000 RATE_LIMIT=50 go run .
 All responses include the following security headers:
 - `X-Content-Type-Options: nosniff`
 - `X-Frame-Options: DENY`
-- `X-XSS-Protection: 1; mode=block`
 - `Content-Security-Policy: default-src 'self'`
 - `Strict-Transport-Security: max-age=31536000; includeSubDomains`
 
