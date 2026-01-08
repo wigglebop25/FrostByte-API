@@ -1,0 +1,29 @@
+services:
+  db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_DATABASE: frost_db
+      MYSQL_ROOT_PASSWORD: password
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  api:
+    build: .
+    ports:
+      - "3000:8080"
+    environment:
+      SERVER_PORT: 8080
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: password
+      DB_NAME: frost_db
+      JWT_SECRET: your_super_secret_key
+    depends_on:
+      db:
+        condition: service_healthy

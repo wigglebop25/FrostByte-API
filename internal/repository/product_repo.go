@@ -1,0 +1,50 @@
+package repository
+
+import (
+	"frostbyte-api/internal/domain"
+	"gorm.io/gorm"
+)
+
+type ProductRepository struct {
+	db *gorm.DB
+}
+
+func NewProductRepository(db *gorm.DB) *ProductRepository {
+	return &ProductRepository{db: db}
+}
+
+func (r *ProductRepository) Create(product *domain.Product) error {
+	return r.db.Create(product).Error
+}
+
+func (r *ProductRepository) GetAll() ([]domain.Product, error) {
+	var products []domain.Product
+	err := r.db.Preload("Categories").Find(&products).Error
+	return products, err
+}
+
+func (r *ProductRepository) FindByID(id uint) (*domain.Product, error) {
+	var product domain.Product
+	err := r.db.Preload("Categories").First(&product, id).Error
+	if err != nil {
+		return nil, err
+	}
+	return &product, nil
+}
+
+func (r *ProductRepository) FindByName(name string) (*domain.Product, error) {
+	var product domain.Product
+	err := r.db.Preload("Categories").Where("name = ?", name).First(&product).Error
+	if err != nil {
+		return nil, err
+	}
+	return &product, nil
+}
+
+func (r *ProductRepository) Update(product *domain.Product) error {
+	return r.db.Model(product).Updates(product).Error
+}
+
+func (r *ProductRepository) Delete(id uint) error {
+	return r.db.Delete(&domain.Product{}, id).Error
+}

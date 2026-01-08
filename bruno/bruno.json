@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "Frostbyte API",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}
