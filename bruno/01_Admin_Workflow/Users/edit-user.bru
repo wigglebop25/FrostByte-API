@@ -4,7 +4,7 @@ meta {
   seq: 4
 }
 
-post {
+put {
   url: https://localhost:443/api/v1/users/1
   body: json
   auth: inherit
@@ -17,6 +17,7 @@ headers {
 body:json {
   {
     "username": "updateduser",
-    "password": "updatedpassword"
+    "password": "updatedpassword",
+    "role_name": "Cashier"
   }
 }
