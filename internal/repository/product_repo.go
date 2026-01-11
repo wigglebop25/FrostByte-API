@@ -46,5 +46,15 @@ func (r *ProductRepository) Update(product *domain.Product) error {
 }
 
 func (r *ProductRepository) Delete(id uint) error {
-	return r.db.Delete(&domain.Product{}, id).Error
+	var product domain.Product
+	if err := r.db.First(&product, id).Error; err != nil {
+		return err
+	}
+	
+	// Clear the many-to-many association with categories
+	if err := r.db.Model(&product).Association("Categories").Clear(); err != nil {
+		return err
+	}
+
+	return r.db.Delete(&product).Error
 }
