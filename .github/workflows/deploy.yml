@@ -28,19 +28,19 @@ jobs:
     needs: build-and-push
     runs-on: ubuntu-latest
     steps:
-      - name: Decode SSH Key
+      - name: Deploy via SSH
         run: |
+          # 1. Setup SSH Key
           mkdir -p ~/.ssh/
           echo "${{ secrets.SSH_KEY }}" | base64 -d > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
+          
+          # 2. Add Server to Known Hosts (to avoid interactive prompt)
+          ssh-keyscan -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
 
-      - name: Executing remote ssh commands
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key_path: ~/.ssh/id_rsa
-          script: |
-            cd frostbyte-api
-            docker-compose pull
+          # 3. Run Deployment Commands
+          ssh -i ~/.ssh/id_rsa ${{ secrets.USERNAME }}@${{ secrets.HOST }} "
+            cd frostbyte-api &&
+            docker-compose pull &&
             docker-compose up -d --build
+          "

@@ -29,6 +29,11 @@ Thumbs.db
 # Scripts
 *.bat
 
+# SSH Keys
+github_deploy_key
+github_deploy_key.pub
+FrostByte-Ser_key.pem
+
 # Documentation
 *.md
 !README.md
