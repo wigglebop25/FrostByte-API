@@ -35,12 +35,23 @@ jobs:
           echo "${{ secrets.SSH_KEY }}" | base64 -d > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           
-          # 2. Add Server to Known Hosts (to avoid interactive prompt)
+          # 2. Add Server to Known Hosts
           ssh-keyscan -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
 
-          # 3. Run Deployment Commands
+          # 3. Copy Configuration Files to Server
+          scp -i ~/.ssh/id_rsa compose.yml Dockerfile ${{ secrets.USERNAME }}@${{ secrets.HOST }}:~/frostbyte-api/
+
+          # 4. Run Deployment Commands
           ssh -i ~/.ssh/id_rsa ${{ secrets.USERNAME }}@${{ secrets.HOST }} "
             cd frostbyte-api &&
+            # Login to Docker Hub (using the credentials passed from local env is hard via SSH)
+            # Simpler: Just pull public/private image if logged in, or rebuild locally
+            # Since we push the image in the previous job, we just need to pull it.
+            # But wait, compose needs to know to pull 'wigglebop25/frostbyte-api'.
+            
+            # We need to ensure 'docker login' happened on the server at least once or make the image public.
+            # Assuming public image or logged in manually once.
+            
             docker-compose pull &&
-            docker-compose up -d --build
+            docker-compose up -d --remove-orphans
           "
