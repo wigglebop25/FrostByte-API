@@ -7,11 +7,63 @@ import (
 
 	"frostbyte-api/internal/service"
 	"github.com/golang-jwt/jwt/v5"
+	"sync"
+	"time"
 )
 
 type contextKey string
 
 const userIDKey contextKey = "user_id"
+
+// Simple Rate Limiter
+type rateLimiter struct {
+	mu      sync.Mutex
+	visitors map[string]*visitor
+}
+
+type visitor struct {
+	lastSeen time.Time
+	count    int
+}
+
+var limiter = &rateLimiter{
+	visitors: make(map[string]*visitor),
+}
+
+func (rl *rateLimiter) allow(ip string) bool {
+	rl.mu.Lock()
+	defer rl.mu.Unlock()
+
+	v, exists := rl.visitors[ip]
+	if !exists {
+		rl.visitors[ip] = &visitor{time.Now(), 1}
+		return true
+	}
+
+	if time.Since(v.lastSeen) > time.Minute {
+		v.lastSeen = time.Now()
+		v.count = 1
+		return true
+	}
+
+	if v.count >= 60 { // Limit: 60 requests per minute
+		return false
+	}
+
+	v.count++
+	return true
+}
+
+func RateLimitMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ip := strings.Split(r.RemoteAddr, ":")[0]
+		if !limiter.allow(ip) {
+			http.Error(w, "Too Many Requests", http.StatusTooManyRequests)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
 
 func JSONMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -109,7 +161,7 @@ func RoleMiddleware(userService *service.UserService, allowedRoles ...string) fu
 			}
 
 			if !hasRole {
-				http.Error(w, "Forbidden: Insufficient permissions", http.StatusForbidden)
+				http.Error(w, "Unauthorized: Permissions Required", http.StatusForbidden)
 				return
 			}
 

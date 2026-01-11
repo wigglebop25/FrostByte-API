@@ -47,7 +47,7 @@ func main() {
 	authHandler := handlers.NewAuthHandler(authService)
 	productHandler := handlers.NewProductHandler(productService)
 	categoryHandler := handlers.NewCategoryHandler(categoryService)
-	orderHandler := handlers.NewOrderHandler(orderService)
+	orderHandler := handlers.NewOrderHandler(orderService, userService)
 	roleHandler := handlers.NewRoleHandler(roleService)
 	userHandler := handlers.NewUserHandler(userService)
 
@@ -59,6 +59,7 @@ func main() {
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.StripSlashes)
 	r.Use(handlers.SecurityHeadersMiddleware) // Add Security Headers
+	r.Use(handlers.RateLimitMiddleware)       // Add Rate Limiting
 	r.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{"*"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
@@ -115,7 +116,6 @@ func main() {
 				// Admin & Cashier routes (Manage Orders)
 				r.Group(func(r chi.Router) {
 					r.Use(handlers.RoleMiddleware(userService, "Admin", "Cashier"))
-					r.Get("/", orderHandler.GetAll)            // Cashiers need to see orders
 					r.Put("/{id}/status", orderHandler.UpdateStatus) // Cashiers need to update status
 					r.Get("/role/{role}", orderHandler.GetByRole)
 					r.Get("/user/{username}", orderHandler.GetByUser)
@@ -127,7 +127,8 @@ func main() {
 					r.Get("/analytics", orderHandler.GetAnalytics)
 				})
 
-				// Standard authenticated routes (Customers)
+				// Standard authenticated routes (Customers & Staff)
+				r.Get("/", orderHandler.GetAll) // Smart filtering now implemented
 				r.Post("/", orderHandler.Create)
 				r.Get("/{id}", orderHandler.GetByID)
 			})

@@ -1,72 +1,92 @@
-# FrostByte API
+# ❄️ FrostByte API
 
-**FrostByte API** is a high-performance, minimalist backend API built in **Go**, designed for blistering speed and reliability in cold-weather data processing scenarios. Built with the Go philosophy of simplicity and efficiency, it prioritizes a security-first architecture.
+**FrostByte API** is a production-ready, high-performance backend built in **Go**. Designed for security and scalability, it features advanced Role-Based Access Control (RBAC), real-time WebSocket updates, and a hardened security architecture suitable for enterprise deployment.
 
-## ❄️ Key Features
+## 🚀 Key Features
 
-*   **Speed & Efficiency:** Built with **Go** (Golang) and the lightweight **Chi** router for minimal overhead.
-*   **Security First:** Robust **JWT** authentication with Argon2 password hashing and Role-Based Access Control (RBAC).
-*   **Real-Time Updates:** Integrated **WebSockets** for live transaction and order monitoring.
-*   **Architecture:** Clean **Handler-Service-Repository** pattern ensures maintainability and scalability.
-*   **Data Integrity:** **MySQL** database with **GORM** for reliable data management and transactional safety.
-*   **Container Ready:** Dockerized with a multi-stage build for small, secure production images.
+*   **Security First:**
+    *   **HTTPS/TLS Enforcement:** Strict Transport Security (HSTS) and secure headers.
+    *   **Authentication:** JWT (JSON Web Tokens) with Argon2 hashing.
+    *   **RBAC:** Granular control (Admin, Cashier, Customer workflows).
+    *   **Rate Limiting:** Built-in protection against abuse (Token Bucket).
+    *   **Container Security:** Non-root Docker images with no baked-in secrets.
+*   **Real-Time Updates:** Integrated **WebSockets** for live order status monitoring.
+*   **Architecture:** Clean **Handler-Service-Repository** pattern.
+*   **Data Integrity:** **MySQL** 8.0 with GORM, fully transactional.
+*   **DevOps Ready:** Includes **CI/CD** workflows (GitHub Actions) and Docker Compose.
 
 ## 🛠 Tech Stack
 
 *   **Language:** Go 1.23+
-*   **Web Framework:** Chi
+*   **Web Framework:** Chi v5
 *   **Database:** MySQL 8.0
-*   **ORM:** GORM
 *   **Real-time:** Gorilla WebSocket
-*   **Authentication:** JWT (JSON Web Tokens) + Argon2
+*   **Deployment:** Docker, Docker Compose, GitHub Actions
 
-## 🚀 Getting Started
+## 🏁 Getting Started
 
-### Prerequisites
+### 1. Prerequisites
 *   Docker & Docker Compose
+*   A pair of SSL certificates (`server.crt` and `server.key`) in the root directory.
 
-### Prerequisites & Setup
+### 2. Quick Start (Docker)
+The easiest way to run the API is using the included production-ready Docker setup.
 
-Since Go and Docker may not be installed in your environment, follow these steps:
+```bash
+# 1. Clone the repository
+git clone https://github.com/your-repo/frostbyte-api.git
+cd frostbyte-api
 
-1.  **Install Go 1.23+**
-    *   Once installed, run the following command in the project root to generate the `go.sum` file:
-        ```bash
-        go mod tidy
-        ```
+# 2. Configure Environment
+# Copy the example and edit strictly (Do NOT commit .env)
+cp .env.example .env
 
-2.  **Install Docker**
-    *   Once installed, run the following command to start the API and MySQL database:
-        ```bash
-        docker-compose up --build
-        ```
+# 3. Start the Stack (HTTPS enabled)
+docker-compose up -d --build
+```
 
-3.  **Access the API**
-    *   The API will be available at `http://localhost:3000` (mapped from container port 8080).
+The API will be available at **`https://127.0.0.1:3000`**.
 
-## 🧪 Testing
+> **Note:** Since we use self-signed certificates for development, you may need to accept the security warning in your browser/client.
 
-We use **Bruno** for API testing. A complete collection is included in this guidance package under the `bruno/` folder.
+### 3. Resetting the Database
+To clear all data and start fresh (useful for testing "First User = Admin" logic):
+```bash
+docker-compose down -v
+docker-compose up -d --build
+```
 
-1.  Install [Bruno](https://www.usebruno.com/).
-2.  Open the `guidance/bruno` collection folder in the Bruno app.
-3.  The `go-api` folder contains the specific tests for this new implementation.
+## 🧪 API Testing (Bruno)
+
+We use **Bruno** for API testing. The `bruno/` folder is organized by user roles to simplify workflow testing.
+
+1.  **Install [Bruno](https://www.usebruno.com/)**.
+2.  **Open Collection**: Point Bruno to the `bruno/` folder in this repo.
+3.  **Workflows**:
+    *   `00_Auth`: Register & Login (Start here).
+    *   `01_Admin_Workflow`: Full system control (Users, Roles, Products, Analytics).
+    *   `02_Cashier_Workflow`: Manage Orders.
+    *   `03_Customer_Workflow`: Shop & View Order History.
+
+## 🚢 Deployment
+
+For detailed production deployment instructions, including setting up a VPS and GitHub Secrets, see **[DEPLOYMENT.md](DEPLOYMENT.md)**.
 
 ## 📂 Project Structure
 
 ```text
 frostbyte-api/
-├── cmd/
-│   └── api/          # Application entry point
+├── .github/workflows # CI/CD Pipelines
+├── bruno/            # API Request Collections
+├── cmd/api/          # Application entry point
 ├── internal/
-│   ├── config/       # Configuration loading
+│   ├── config/       # Configuration
 │   ├── database/     # DB connection & migrations
 │   ├── domain/       # Data models (structs)
-│   ├── handlers/     # HTTP Controllers
+│   ├── handlers/     # HTTP Controllers & Middleware
 │   ├── repository/   # Data access layer
 │   ├── service/      # Business logic
 │   └── websocket/    # Real-time hub
-├── rust_legacy/      # Archived original Rust code
-├── Dockerfile
-└── compose.yml
+├── Dockerfile        # Secured multi-stage build
+└── compose.yml       # Production-ready compose file
 ```

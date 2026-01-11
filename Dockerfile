@@ -13,12 +13,16 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o main ./cmd/api
 # Run stage
 FROM alpine:latest
 
+# Create a non-root user
+RUN adduser -D frostbyte
+USER frostbyte
+
 WORKDIR /app
 
 COPY --from=builder /app/main .
-COPY .env.example .env
-COPY server.crt .
-COPY server.key .
+
+# NOTE: In production, mount .env, server.crt, and server.key using volumes.
+# Do NOT copy them here to avoid baking secrets into the image.
 
 EXPOSE 8080
 

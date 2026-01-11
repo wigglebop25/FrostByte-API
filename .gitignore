@@ -1,0 +1,34 @@
+# Binaries
+main
+main.exe
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Environment Variables
+.env
+.env.local
+
+# IDEs
+.vscode/
+.idea/
+
+# TLS Certificates (Don't commit real certs!)
+*.crt
+*.key
+*.pem
+
+# Dependencies
+vendor/
+
+# OS specific
+.DS_Store
+Thumbs.db
+
+# Scripts
+*.bat
+
+# Documentation
+*.md
+!README.md

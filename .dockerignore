@@ -1,0 +1,13 @@
+.git
+.gitignore
+.env
+.env.local
+.vscode
+.idea
+vendor/
+README.md
+GEMINI.md
+IMPLEMENTATION_GUIDE.md
+MASTER_PLAN.md
+bruno/
+*.bat

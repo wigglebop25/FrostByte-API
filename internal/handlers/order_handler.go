@@ -11,11 +11,15 @@ import (
 )
 
 type OrderHandler struct {
-	service *service.OrderService
+	service     *service.OrderService
+	userService *service.UserService
 }
 
-func NewOrderHandler(service *service.OrderService) *OrderHandler {
-	return &OrderHandler{service: service}
+func NewOrderHandler(service *service.OrderService, userService *service.UserService) *OrderHandler {
+	return &OrderHandler{
+		service:     service,
+		userService: userService,
+	}
 }
 
 func (h *OrderHandler) Create(w http.ResponseWriter, r *http.Request) {
@@ -47,7 +51,36 @@ func (h *OrderHandler) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *OrderHandler) GetAll(w http.ResponseWriter, r *http.Request) {
-	orders, err := h.service.GetAllOrders()
+	userID, ok := GetUserIDFromContext(r.Context())
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	user, err := h.userService.GetUserByID(userID)
+	if err != nil {
+		http.Error(w, "User not found", http.StatusUnauthorized)
+		return
+	}
+
+	// Check if user is Admin or Cashier
+	isStaff := false
+	for _, role := range user.Roles {
+		if role.Name == "Admin" || role.Name == "Cashier" {
+			isStaff = true
+			break
+		}
+	}
+
+	var orders []domain.Order
+	if isStaff {
+		// Staff sees all orders
+		orders, err = h.service.GetAllOrders()
+	} else {
+		// Customer only sees their own orders
+		orders, err = h.service.GetOrdersByUserID(userID)
+	}
+
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -103,7 +136,20 @@ func (h *OrderHandler) GetByUser(w http.ResponseWriter, r *http.Request) {
 
 	orders, err := h.service.GetOrdersByUser(username)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		// If user not found (or other error), return the specific message requested
+		// We could be more specific checking error type, but for now:
+		w.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(w).Encode(map[string]string{
+			"message": "No Results: No orders exist for the user " + username,
+		})
+		return
+	}
+
+	if len(orders) == 0 {
+		w.WriteHeader(http.StatusOK) // Or NotFound? User said "No Results" message.
+		json.NewEncoder(w).Encode(map[string]string{
+			"message": "No Results: No orders exist for the user " + username,
+		})
 		return
 	}
 
@@ -148,6 +194,7 @@ func (h *OrderHandler) UpdateStatus(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"message": "Status updated"})
 }
 
 func (h *OrderHandler) GetAnalytics(w http.ResponseWriter, r *http.Request) {
