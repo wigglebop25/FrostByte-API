@@ -83,3 +83,29 @@ func (s *AuthService) ValidateToken(tokenString string) (*jwt.Token, error) {
 		return s.jwtSecret, nil
 	})
 }
+
+func (s *AuthService) RefreshToken(tokenString string) (string, error) {
+	token, err := s.ValidateToken(tokenString)
+	if err != nil || !token.Valid {
+		return "", errors.New("invalid token")
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return "", errors.New("invalid token claims")
+	}
+
+	userIDFloat, ok := claims["user_id"].(float64)
+	if !ok {
+		return "", errors.New("user ID not found in token")
+	}
+
+	// Generate new token
+	newToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user_id": uint(userIDFloat),
+		"exp":     time.Now().Add(time.Hour * 24).Unix(),
+		"iss":     "frostbyte-api",
+	})
+
+	return newToken.SignedString(s.jwtSecret)
+}
