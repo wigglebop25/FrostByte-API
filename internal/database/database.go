@@ -37,7 +37,7 @@ func Connect(dsn string) {
 
 	// Seed Roles
 	roles := []domain.Role{
-		{Name: "Admin", Permissions: "READ,WRITE,DELETE,UPDATE", Description: "Full access"},
+		{Name: "Admin", Permissions: "ADMIN", Description: "Full access"},
 		{Name: "Customer", Permissions: "READ,WRITE", Description: "Can view products and place orders"},
 		{Name: "Cashier", Permissions: "READ,UPDATE", Description: "Can view orders and update status"},
 	}

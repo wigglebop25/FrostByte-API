@@ -20,6 +20,23 @@ func JSONMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+func SecurityHeadersMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Strict-Transport-Security: max-age=63072000; includeSubDomains; preload (2 years)
+		w.Header().Set("Strict-Transport-Security", "max-age=63072000; includeSubDomains")
+		// Prevent MIME type sniffing
+		w.Header().Set("X-Content-Type-Options", "nosniff")
+		// Prevent clickjacking
+		w.Header().Set("X-Frame-Options", "DENY")
+		// XSS Protection (for older browsers)
+		w.Header().Set("X-XSS-Protection", "1; mode=block")
+		// Content Security Policy (Basic restricted)
+		w.Header().Set("Content-Security-Policy", "default-src 'self'")
+		
+		next.ServeHTTP(w, r)
+	})
+}
+
 func AuthMiddleware(authService *service.AuthService) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -60,6 +77,10 @@ func AuthMiddleware(authService *service.AuthService) func(http.Handler) http.Ha
 }
 
 func AdminMiddleware(userService *service.UserService) func(http.Handler) http.Handler {
+	return RoleMiddleware(userService, "Admin")
+}
+
+func RoleMiddleware(userService *service.UserService, allowedRoles ...string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			userID, ok := GetUserIDFromContext(r.Context())
@@ -74,16 +95,21 @@ func AdminMiddleware(userService *service.UserService) func(http.Handler) http.H
 				return
 			}
 
-			isAdmin := false
-			for _, role := range user.Roles {
-				if role.Name == "Admin" {
-					isAdmin = true
+			hasRole := false
+			for _, userRole := range user.Roles {
+				for _, allowed := range allowedRoles {
+					if userRole.Name == allowed {
+						hasRole = true
+						break
+					}
+				}
+				if hasRole {
 					break
 				}
 			}
 
-			if !isAdmin {
-				http.Error(w, "Forbidden: Admins only", http.StatusForbidden)
+			if !hasRole {
+				http.Error(w, "Forbidden: Insufficient permissions", http.StatusForbidden)
 				return
 			}
 

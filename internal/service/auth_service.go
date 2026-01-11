@@ -35,15 +35,15 @@ func (s *AuthService) Register(username, password string) (*domain.User, error) 
 		PasswordHash: string(hashedPassword),
 	}
 
-	if err := s.repo.Create(user); err != nil {
-		return nil, err
+	// Determine Role: If this is the first user, make them Admin
+	roleID := uint(2) // Default: Customer
+	count, err := s.repo.Count()
+	if err == nil && count == 0 {
+		roleID = uint(1) // Admin
 	}
 
-	// Assign 'Customer' role by default (Role ID 2 based on seed)
-	// If username is 'adminuser', assign 'Admin' role (Role ID 1)
-	roleID := uint(2)
-	if username == "adminuser" {
-		roleID = uint(1)
+	if err := s.repo.Create(user); err != nil {
+		return nil, err
 	}
 	
 	_ = s.roleRepo.AssignRoleToUser(user.UserID, roleID)
@@ -64,6 +64,7 @@ func (s *AuthService) Login(username, password string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"user_id": user.UserID,
 		"exp":     time.Now().Add(time.Hour * 24).Unix(),
+		"iss":     "frostbyte-api",
 	})
 
 	tokenString, err := token.SignedString(s.jwtSecret)

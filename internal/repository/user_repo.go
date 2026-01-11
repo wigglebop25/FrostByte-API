@@ -54,3 +54,9 @@ func (r *UserRepository) Search(query string) ([]domain.User, error) {
 	err := r.db.Preload("Roles").Where("username LIKE ?", "%"+query+"%").Find(&users).Error
 	return users, err
 }
+
+func (r *UserRepository) Count() (int64, error) {
+	var count int64
+	err := r.db.Model(&domain.User{}).Count(&count).Error
+	return count, err
+}

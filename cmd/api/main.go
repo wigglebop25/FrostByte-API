@@ -58,6 +58,7 @@ func main() {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.StripSlashes)
+	r.Use(handlers.SecurityHeadersMiddleware) // Add Security Headers
 	r.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{"*"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
@@ -86,39 +87,53 @@ func main() {
 
 			r.Route("/products", func(r chi.Router) {
 				r.Get("/", productHandler.GetAll)
-				r.Post("/", productHandler.Create)
 				r.Get("/{id}", productHandler.GetByID)
-				r.Put("/{id}", productHandler.Update)
-				r.Delete("/{id}", productHandler.Delete)
+				// Admin only for modifications
+				r.Group(func(r chi.Router) {
+					r.Use(handlers.AdminMiddleware(userService))
+					r.Post("/", productHandler.Create)
+					r.Put("/{id}", productHandler.Update)
+					r.Delete("/{id}", productHandler.Delete)
+				})
 			})
 
 			r.Route("/categories", func(r chi.Router) {
 				r.Get("/", categoryHandler.GetAll)
-				r.Post("/", categoryHandler.Create)
 				r.Get("/{id}", categoryHandler.GetByID)
-				r.Put("/{id}", categoryHandler.Update)
-				r.Delete("/{id}", categoryHandler.Delete)
-				r.Post("/product", categoryHandler.AddProduct)
-				r.Post("/product/remove", categoryHandler.RemoveProduct)
+				// Admin only for modifications
+				r.Group(func(r chi.Router) {
+					r.Use(handlers.AdminMiddleware(userService))
+					r.Post("/", categoryHandler.Create)
+					r.Put("/{id}", categoryHandler.Update)
+					r.Delete("/{id}", categoryHandler.Delete)
+					r.Post("/product", categoryHandler.AddProduct)
+					r.Post("/product/remove", categoryHandler.RemoveProduct)
+				})
 			})
 
 			r.Route("/orders", func(r chi.Router) {
-				// Admin-only routes
+				// Admin & Cashier routes (Manage Orders)
+				r.Group(func(r chi.Router) {
+					r.Use(handlers.RoleMiddleware(userService, "Admin", "Cashier"))
+					r.Get("/", orderHandler.GetAll)            // Cashiers need to see orders
+					r.Put("/{id}/status", orderHandler.UpdateStatus) // Cashiers need to update status
+					r.Get("/role/{role}", orderHandler.GetByRole)
+					r.Get("/user/{username}", orderHandler.GetByUser)
+				})
+				
+				// Admin only (Analytics)
 				r.Group(func(r chi.Router) {
 					r.Use(handlers.AdminMiddleware(userService))
 					r.Get("/analytics", orderHandler.GetAnalytics)
 				})
 
-				// Standard authenticated routes
-				r.Get("/", orderHandler.GetAll)
+				// Standard authenticated routes (Customers)
 				r.Post("/", orderHandler.Create)
 				r.Get("/{id}", orderHandler.GetByID)
-				r.Put("/{id}/status", orderHandler.UpdateStatus)
-				r.Get("/user/{username}", orderHandler.GetByUser)
-				r.Get("/role/{role}", orderHandler.GetByRole)
 			})
 
 			r.Route("/roles", func(r chi.Router) {
+				r.Use(handlers.AdminMiddleware(userService)) // Apply Admin check
 				r.Get("/", roleHandler.GetAll)
 				r.Post("/create", roleHandler.Create)
 				r.Get("/{id}", roleHandler.GetByID)
@@ -129,6 +144,7 @@ func main() {
 			})
 
 			r.Route("/users", func(r chi.Router) {
+				r.Use(handlers.AdminMiddleware(userService)) // Apply Admin check
 				r.Post("/", userHandler.Create)
 				r.Get("/search", userHandler.Search)
 				r.Get("/", userHandler.GetAll)

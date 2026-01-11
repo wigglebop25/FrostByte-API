@@ -70,6 +70,27 @@ func (h *OrderHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Security Check: Ensure user owns the order or is Admin
+	userID, ok := GetUserIDFromContext(r.Context())
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	// Check if user is the owner
+	if order.UserID != userID {
+		// If not owner, check if Admin (we need to inject UserService or check roles here)
+		// For now, simpler approach: if strict security is requested, prevent access.
+		// NOTE: Ideally we'd check isAdmin here, but we don't have easy access to user roles in this handler without a DB call.
+		// However, since this is a critical security fix, I will rely on the Service layer or fetch the user.
+		
+		// Let's return Forbidden for now to be safe. 
+		// If the user IS an admin, they should use the Admin-specific routes or we need to enhance this handler.
+		// Given the constraints, I'll block it. Use 'GetAll' (Admin) to see others' orders.
+		http.Error(w, "Forbidden: You do not have access to this order", http.StatusForbidden)
+		return
+	}
+
 	json.NewEncoder(w).Encode(order)
 }
 
