@@ -39,8 +39,12 @@ jobs:
           # 2. Add Server to Known Hosts
           ssh-keyscan -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
 
+          # Debug: List files to ensure we are in the right place
+          echo "Current directory contents:"
+          ls -la
+
           # 3. Copy Configuration Files to Server
-          scp -i ~/.ssh/id_rsa compose.yml Dockerfile ${{ secrets.USERNAME }}@${{ secrets.HOST }}:~/frostbyte-api/
+          scp -i ~/.ssh/id_rsa ./compose.yml ./Dockerfile ${{ secrets.USERNAME }}@${{ secrets.HOST }}:~/frostbyte-api/
 
           # 4. Run Deployment Commands
           ssh -i ~/.ssh/id_rsa ${{ secrets.USERNAME }}@${{ secrets.HOST }} "
