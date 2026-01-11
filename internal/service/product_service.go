@@ -30,6 +30,12 @@ func (s *ProductService) CreateProductWithCategories(product *domain.Product, ca
 }
 
 func (s *ProductService) UpdateProductWithCategories(product *domain.Product, categoryNames []string) error {
+	// Check if product exists first
+	_, err := s.repo.FindByID(product.ProductID)
+	if err != nil {
+		return err // Will return "record not found" from repo
+	}
+
 	var categories []domain.Category
 	for _, name := range categoryNames {
 		cat, err := s.categoryRepo.FindByName(name)
