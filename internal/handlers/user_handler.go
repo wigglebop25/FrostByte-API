@@ -23,7 +23,7 @@ func (h *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		Username string `json:"username"`
 		Password string `json:"password"`
-		RoleName string `json:"role_name"` // Optional role assignment
+		RoleName string `json:"role_name"` 
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -31,18 +31,19 @@ func (h *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := h.service.CreateUser(req.Username, req.Password, req.RoleName)
+	_, err := h.service.CreateUser(req.Username, req.Password, req.RoleName)
 	if err != nil {
 		if strings.Contains(err.Error(), "1062") {
 			http.Error(w, "Username already exists", http.StatusConflict)
 			return
 		}
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		// Return specific role validation errors directly
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(user)
+	json.NewEncoder(w).Encode(map[string]string{"message": "User added successfully"})
 }
 
 func (h *UserHandler) GetAll(w http.ResponseWriter, r *http.Request) {
@@ -78,18 +79,50 @@ func (h *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var user domain.User
-	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+	var req struct {
+		Username string `json:"username"`
+		Password string `json:"password"`
+		RoleName string `json:"role_name"`
+	}
+	
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	user.UserID = uint(id)
 
-	if err := h.service.UpdateUser(&user); err != nil {
+	user := &domain.User{
+		UserID:       uint(id),
+		Username:     req.Username,
+		PasswordHash: req.Password, // Service will hash this if not empty
+	}
+
+	if err := h.service.UpdateUser(user, req.RoleName); err != nil {
+		if strings.Contains(err.Error(), "1062") {
+			http.Error(w, "Username already exists", http.StatusConflict)
+			return
+		}
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	json.NewEncoder(w).Encode(user)
+	
+	// Determine success message based on what changed
+	var changes []string
+	if req.Username != "" {
+		changes = append(changes, "Username")
+	}
+	if req.Password != "" {
+		changes = append(changes, "password")
+	}
+	if req.RoleName != "" {
+		changes = append(changes, "role")
+	}
+
+	msg := "User updated successfully"
+	if len(changes) == 1 {
+		msg = "User " + changes[0] + " updated successfully"
+	}
+
+	json.NewEncoder(w).Encode(map[string]string{"message": msg})
 }
 
 func (h *UserHandler) Delete(w http.ResponseWriter, r *http.Request) {
