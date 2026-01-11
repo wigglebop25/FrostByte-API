@@ -4,16 +4,10 @@
 
 ## 🚀 Key Features
 
-*   **Security First:**
-    *   **HTTPS/TLS Enforcement:** Strict Transport Security (HSTS) and secure headers.
-    *   **Authentication:** JWT (JSON Web Tokens) with Argon2 hashing.
-    *   **RBAC:** Granular control (Admin, Cashier, Customer workflows).
-    *   **Rate Limiting:** Built-in protection against abuse (Token Bucket).
-    *   **Container Security:** Non-root Docker images with no baked-in secrets.
-*   **Real-Time Updates:** Integrated **WebSockets** for live order status monitoring.
-*   **Architecture:** Clean **Handler-Service-Repository** pattern.
-*   **Data Integrity:** **MySQL** 8.0 with GORM, fully transactional.
-*   **DevOps Ready:** Includes **CI/CD** workflows (GitHub Actions) and Docker Compose.
+*   **Security First:** HTTPS/TLS, JWT Auth (Argon2), RBAC, Rate Limiting, and Secured Docker Containers.
+*   **Real-Time:** Integrated WebSockets for live updates.
+*   **Data Integrity:** MySQL 8.0 with GORM (Transactional).
+*   **DevOps Ready:** GitHub Actions CI/CD pipeline included.
 
 ## 🛠 Tech Stack
 
@@ -27,30 +21,17 @@
 
 ### 1. Prerequisites
 *   Docker & Docker Compose
-*   A pair of SSL certificates (`server.crt` and `server.key`) in the root directory.
+*   SSL Certificates (`server.crt`, `server.key`) in the root.
+*   `.env` file (copy from `.env.example`).
 
-### 2. Quick Start (Docker)
-The easiest way to run the API is using the included production-ready Docker setup.
-
+### 2. Quick Start
 ```bash
-# 1. Clone the repository
-git clone https://github.com/your-repo/frostbyte-api.git
-cd frostbyte-api
-
-# 2. Configure Environment
-# Copy the example and edit strictly (Do NOT commit .env)
-cp .env.example .env
-
-# 3. Start the Stack (HTTPS enabled)
+# Start the stack (HTTPS enabled)
 docker-compose up -d --build
 ```
+Access at: **`https://127.0.0.1:3000`**
 
-The API will be available at **`https://127.0.0.1:3000`**.
-
-> **Note:** Since we use self-signed certificates for development, you may need to accept the security warning in your browser/client.
-
-### 3. Resetting the Database
-To clear all data and start fresh (useful for testing "First User = Admin" logic):
+### 3. Reset Database
 ```bash
 docker-compose down -v
 docker-compose up -d --build
@@ -58,35 +39,17 @@ docker-compose up -d --build
 
 ## 🧪 API Testing (Bruno)
 
-We use **Bruno** for API testing. The `bruno/` folder is organized by user roles to simplify workflow testing.
-
-1.  **Install [Bruno](https://www.usebruno.com/)**.
-2.  **Open Collection**: Point Bruno to the `bruno/` folder in this repo.
-3.  **Workflows**:
-    *   `00_Auth`: Register & Login (Start here).
-    *   `01_Admin_Workflow`: Full system control (Users, Roles, Products, Analytics).
-    *   `02_Cashier_Workflow`: Manage Orders.
-    *   `03_Customer_Workflow`: Shop & View Order History.
+Import the `bruno/` folder into [Bruno](https://www.usebruno.com/).
+*   **00_Auth**: Login/Register (First user registered becomes **Admin**).
+*   **01_Admin_Workflow**: Full system control.
+*   **02_Cashier_Workflow**: Order management.
+*   **03_Customer_Workflow**: Shopping & History.
 
 ## 🚢 Deployment
 
-For detailed production deployment instructions, including setting up a VPS and GitHub Secrets, see **[DEPLOYMENT.md](DEPLOYMENT.md)**.
+This project includes a **GitHub Actions** workflow (`.github/workflows/deploy.yml`) that automatically deploys to a VPS.
 
-## 📂 Project Structure
-
-```text
-frostbyte-api/
-├── .github/workflows # CI/CD Pipelines
-├── bruno/            # API Request Collections
-├── cmd/api/          # Application entry point
-├── internal/
-│   ├── config/       # Configuration
-│   ├── database/     # DB connection & migrations
-│   ├── domain/       # Data models (structs)
-│   ├── handlers/     # HTTP Controllers & Middleware
-│   ├── repository/   # Data access layer
-│   ├── service/      # Business logic
-│   └── websocket/    # Real-time hub
-├── Dockerfile        # Secured multi-stage build
-└── compose.yml       # Production-ready compose file
-```
+**Requirements:**
+1.  **Docker Hub Secrets:** `DOCKER_USERNAME`, `DOCKER_PASSWORD`.
+2.  **Server Secrets:** `HOST` (IP), `USERNAME`, `SSH_KEY`.
+3.  **Server Setup:** Install Docker and create `.env` file manually on the server.
