@@ -35,6 +35,7 @@ github_deploy_key.pub
 FrostByte-Ser_key.pem
 
 # Documentation
+*.md
 !docs/*.md
 !README.md
 
