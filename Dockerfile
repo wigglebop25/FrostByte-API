@@ -5,7 +5,7 @@ WORKDIR /app
 
 # Debug: List what Docker sees
 COPY . .
-RUN ls -la
+RUN ls -laR
 
 # Restore dependencies
 RUN go mod download
