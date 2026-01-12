@@ -11,3 +11,8 @@ IMPLEMENTATION_GUIDE.md
 MASTER_PLAN.md
 bruno/
 *.bat
+*.crt
+*.key
+*.pem
+github_deploy_key
+github_deploy_key.pub
