@@ -37,3 +37,6 @@ FrostByte-Ser_key.pem
 # Documentation
 *.md
 !README.md
+
+# Logs
+*.log
