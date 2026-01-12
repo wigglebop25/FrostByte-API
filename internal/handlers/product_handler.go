@@ -69,7 +69,11 @@ func (h *ProductHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	if err := h.service.CreateProductWithCategories(&product, req.CategoryNames); err != nil {
 		if strings.Contains(err.Error(), "1062") {
-			http.Error(w, "Product already exists", http.StatusConflict)
+			http.Error(w, "The product name you are trying to update already exists. Try again.", http.StatusConflict)
+			return
+		}
+		if strings.Contains(err.Error(), "record not found") {
+			http.Error(w, "You are trying to update a product categories with non existing, please try again", http.StatusBadRequest)
 			return
 		}
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -110,11 +114,42 @@ func (h *ProductHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.service.UpdateProductWithCategories(&product, req.CategoryNames); err != nil {
+		if strings.Contains(err.Error(), "1062") {
+			http.Error(w, "The product name you are trying to update already exists. Try again.", http.StatusConflict)
+			return
+		}
+		if strings.Contains(err.Error(), "record not found") {
+			http.Error(w, "You are trying to update a product categories with non existing, please try again", http.StatusBadRequest)
+			return
+		}
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	json.NewEncoder(w).Encode(product)
+	msg := "Product successfully updated"
+	var updates []string
+	if req.Name != "" {
+		updates = append(updates, "name")
+	}
+	if req.Description != "" {
+		updates = append(updates, "description")
+	}
+	if req.Price != 0 {
+		updates = append(updates, "price")
+	}
+	if req.ProductImageURI != "" {
+		updates = append(updates, "image")
+	}
+	if req.CategoryNames != nil {
+		updates = append(updates, "categories")
+	}
+
+	if len(updates) == 1 {
+		msg = "Product " + updates[0] + " successfully updated"
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"message": msg})
 }
 
 func (h *ProductHandler) Delete(w http.ResponseWriter, r *http.Request) {
