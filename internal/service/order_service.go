@@ -31,7 +31,8 @@ func (s *OrderService) CreateOrder(userID uint, items []domain.OrderProduct) (*d
 			return nil, err
 		}
 		items[i].UnitPrice = product.Price
-		total += product.Price * float64(item.Quantity)
+		items[i].LineTotal = product.Price * float64(item.Quantity)
+		total += items[i].LineTotal
 	}
 
 	order := &domain.Order{
@@ -111,7 +112,7 @@ func (s *OrderService) UpdateOrderStatus(id uint, status string) error {
 }
 
 func (s *OrderService) GetSalesAnalytics() (map[string]interface{}, error) {
-	totalRevenue, totalOrders, err := s.repo.GetAnalytics()
+	totalRevenue, totalOrders, statusCounts, err := s.repo.GetAnalytics()
 	if err != nil {
 		return nil, err
 	}
@@ -119,5 +120,6 @@ func (s *OrderService) GetSalesAnalytics() (map[string]interface{}, error) {
 	return map[string]interface{}{
 		"total_revenue": totalRevenue,
 		"total_orders":  totalOrders,
+		"status_counts": statusCounts,
 	}, nil
 }
