@@ -6,11 +6,9 @@
 .idea
 vendor/
 bruno/
-docs/
 *.bat
 *.crt
 *.key
 *.pem
 github_deploy_key
 github_deploy_key.pub
-
