@@ -13,10 +13,4 @@ docs/
 *.pem
 github_deploy_key
 github_deploy_key.pub
-!README.md
-!GEMINI.md
-!go.mod
-!go.sum
-!cmd/
-!internal/
 
