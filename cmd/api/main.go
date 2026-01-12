@@ -120,11 +120,6 @@ func main() {
 					r.Put("/{id}/status", orderHandler.UpdateStatus) // Cashiers need to update status
 					r.Get("/role/{role}", orderHandler.GetByRole)
 					r.Get("/user/{username}", orderHandler.GetByUser)
-				})
-				
-				// Admin only (Analytics)
-				r.Group(func(r chi.Router) {
-					r.Use(handlers.AdminMiddleware(userService))
 					r.Get("/analytics", orderHandler.GetAnalytics)
 				})
 
