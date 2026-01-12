@@ -21,9 +21,10 @@ func (s *ProductService) CreateProductWithCategories(product *domain.Product, ca
 	var categories []domain.Category
 	for _, name := range categoryNames {
 		cat, err := s.categoryRepo.FindByName(name)
-		if err == nil {
-			categories = append(categories, *cat)
+		if err != nil {
+			return err
 		}
+		categories = append(categories, *cat)
 	}
 	product.Categories = categories
 	return s.repo.Create(product)
@@ -37,11 +38,15 @@ func (s *ProductService) UpdateProductWithCategories(product *domain.Product, ca
 	}
 
 	var categories []domain.Category
+	if categoryNames != nil {
+		categories = make([]domain.Category, 0)
+	}
 	for _, name := range categoryNames {
 		cat, err := s.categoryRepo.FindByName(name)
-		if err == nil {
-			categories = append(categories, *cat)
+		if err != nil {
+			return err
 		}
+		categories = append(categories, *cat)
 	}
 	product.Categories = categories
 	return s.repo.Update(product)
