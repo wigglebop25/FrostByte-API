@@ -42,7 +42,19 @@ func (r *ProductRepository) FindByName(name string) (*domain.Product, error) {
 }
 
 func (r *ProductRepository) Update(product *domain.Product) error {
-	return r.db.Model(product).Updates(product).Error
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Model(product).Updates(product).Error; err != nil {
+			return err
+		}
+		
+		if product.Categories != nil {
+			if err := tx.Model(product).Association("Categories").Replace(product.Categories); err != nil {
+				return err
+			}
+		}
+		
+		return nil
+	})
 }
 
 func (r *ProductRepository) Delete(id uint) error {
