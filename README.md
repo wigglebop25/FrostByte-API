@@ -16,3 +16,10 @@ FrostByte API is a production-ready, high-performance backend built in Go. Desig
 *   **Database**: MySQL 8.0
 *   **Real-time**: Gorilla WebSocket
 *   **Deployment**: Docker, Docker Compose, GitHub Actions
+
+## 📚 Documentation
+
+*   [Implementation Guide](docs/IMPLEMENTATION_GUIDE.md) - Step-by-step guide on how the API was built.
+*   [Azure Deployment Guide](docs/AZURE_DEPLOY.md) - Instructions for deploying to Azure.
+*   [Master Plan](docs/MASTER_PLAN.md) - Original project plan and architecture.
+*   [Deployment Details](docs/DEPLOYMENT.md) - Additional deployment information.
