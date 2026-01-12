@@ -16,8 +16,9 @@ services:
       retries: 10
 
   api:
-    # Use the image built by GitHub Actions
-    image: wigglebop25/frostbyte-api:latest
+    # Use the local build context instead of pulling from Docker Hub
+    build: .
+    # image: wigglebop25/frostbyte-api:latest
     ports:
       - "443:8080"
     environment:
