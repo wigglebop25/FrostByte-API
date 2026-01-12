@@ -3,13 +3,14 @@ FROM golang:1.23-alpine AS builder
 
 WORKDIR /app
 
-COPY go.mod go.sum ./
+# Debug: List what Docker sees
+COPY . .
+RUN ls -la
+
+# Restore dependencies
 RUN go mod download
 
-COPY cmd ./cmd
-COPY internal ./internal
-COPY . .
-
+# Build
 RUN CGO_ENABLED=0 GOOS=linux go build -o main ./cmd/api
 
 # Run stage
