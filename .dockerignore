@@ -12,3 +12,8 @@ bruno/
 *.pem
 github_deploy_key
 github_deploy_key.pub
+GEMINI.md
+!go.mod
+!go.sum
+!cmd/
+!internal/
