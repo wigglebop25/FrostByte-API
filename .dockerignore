@@ -1,8 +1,0 @@
-.git
-.env
-.env.local
-*.key
-*.pem
-github_deploy_key
-github_deploy_key.pub
-GEMINI.md
