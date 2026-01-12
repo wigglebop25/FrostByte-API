@@ -17,8 +17,8 @@ services:
 
   api:
     # Use the local build context instead of pulling from Docker Hub
-    build: .
-    # image: wigglebop25/frostbyte-api:latest
+    # build: .
+    image: wigglebop25/frostbyte-api:latest
     ports:
       - "443:8080"
     environment:

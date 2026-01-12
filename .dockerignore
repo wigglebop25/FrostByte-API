@@ -1,0 +1,15 @@
+.git
+.github
+.env
+*.pem
+*.crt
+*.key
+docs
+bruno
+*.bat
+compose.yml
+docker-compose.yml
+test_api.bat
+reset_db.bat
+run_local.bat
+run_tests.bat
