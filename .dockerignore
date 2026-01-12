@@ -1,17 +1,8 @@
 .git
-.gitignore
 .env
 .env.local
-.vscode
-.idea
-vendor/
-bruno/
-docs/
-*.bat
-*.crt
 *.key
 *.pem
 github_deploy_key
 github_deploy_key.pub
 GEMINI.md
-README.md
