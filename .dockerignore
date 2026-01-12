@@ -14,8 +14,4 @@ docs/
 github_deploy_key
 github_deploy_key.pub
 GEMINI.md
-!go.mod
-!go.sum
-!cmd/
-!internal/
-!Dockerfile
+README.md
