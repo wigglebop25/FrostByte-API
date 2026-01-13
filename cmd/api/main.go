@@ -119,7 +119,6 @@ func main() {
 					r.Use(handlers.RoleMiddleware(userService, "Admin", "Cashier"))
 					r.Put("/{id}/status", orderHandler.UpdateStatus) // Cashiers need to update status
 					r.Get("/role/{role}", orderHandler.GetByRole)
-					r.Get("/user/{username}", orderHandler.GetByUser)
 					r.Get("/analytics", orderHandler.GetAnalytics)
 				})
 
@@ -127,6 +126,7 @@ func main() {
 				r.Get("/", orderHandler.GetAll) // Smart filtering now implemented
 				r.Post("/", orderHandler.Create)
 				r.Get("/{id}", orderHandler.GetByID)
+				r.Get("/user/{username}", orderHandler.GetByUser) // Moved here to allow self-access
 			})
 
 			r.Route("/roles", func(r chi.Router) {
@@ -141,13 +141,18 @@ func main() {
 			})
 
 			r.Route("/users", func(r chi.Router) {
-				r.Use(handlers.AdminMiddleware(userService)) // Apply Admin check
-				r.Post("/", userHandler.Create)
-				r.Get("/search", userHandler.Search)
-				r.Get("/", userHandler.GetAll)
+				// Self-Access allowed (Security in handler)
 				r.Get("/{id}", userHandler.GetByID)
-				r.Put("/{id}", userHandler.Update)
-				r.Delete("/{id}", userHandler.Delete)
+
+				// Admin Only
+				r.Group(func(r chi.Router) {
+					r.Use(handlers.AdminMiddleware(userService)) 
+					r.Post("/", userHandler.Create)
+					r.Get("/search", userHandler.Search)
+					r.Get("/", userHandler.GetAll)
+					r.Put("/{id}", userHandler.Update)
+					r.Delete("/{id}", userHandler.Delete)
+				})
 			})
 		})
 
