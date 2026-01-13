@@ -47,7 +47,8 @@ func (s *OrderService) CreateOrder(userID uint, items []domain.OrderProduct) (*d
 	}
 
 	// Broadcast the new order
-	s.hub.Broadcast(order)
+	// Target: The User who created it + All Staff (Admin/Cashier)
+	s.hub.Broadcast(order, order.UserID, []string{"Admin", "Cashier"})
 
 	return order, nil
 }
@@ -101,12 +102,13 @@ func (s *OrderService) UpdateOrderStatus(id uint, status string) error {
 	}
 
 	// Broadcast the status update
+	// Target: The User who owns the order + All Staff (Admin/Cashier)
 	s.hub.Broadcast(map[string]interface{}{
 		"order_id": id,
 		"status":   status,
 		"type":     "STATUS_UPDATE",
 		"user_id":  order.UserID,
-	})
+	}, order.UserID, []string{"Admin", "Cashier"})
 
 	return nil
 }
