@@ -3,7 +3,7 @@ name: Build and Deploy
 on:
   push:
     branches: [ master ]
-  workflow_dispatch: # Allows manual trigger from Actions tab
+  workflow_dispatch:
 
 jobs:
   build-and-push:
@@ -38,29 +38,44 @@ jobs:
           mkdir -p ~/.ssh/
           echo "${{ secrets.SSH_KEY }}" | base64 -d > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          
-          # 2. Add Server to Known Hosts
           ssh-keyscan -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
 
-          # Debug: List files to ensure we are in the right place
-          echo "Current directory contents:"
-          ls -la
+          # 2. Copy Configuration Files
+          scp -i ~/.ssh/id_rsa ./compose.yml ${{ secrets.USERNAME }}@${{ secrets.HOST }}:~/FrostByte-API/
 
-          # 3. Copy Configuration Files to Server
-          scp -i ~/.ssh/id_rsa ./compose.yml ./Dockerfile ${{ secrets.USERNAME }}@${{ secrets.HOST }}:~/frostbyte-api/
-
-          # 4. Run Deployment Commands
+          # 3. Remote Deployment Script
           ssh -i ~/.ssh/id_rsa ${{ secrets.USERNAME }}@${{ secrets.HOST }} "
-            cd frostbyte-api &&
-            # Login to Docker Hub (using the credentials passed from local env is hard via SSH)
-            # Simpler: Just pull public/private image if logged in, or rebuild locally
-            # Since we push the image in the previous job, we just need to pull it.
-            # But wait, compose needs to know to pull 'wigglebop25/frostbyte-api'.
+            # Stop on error
+            set -e
             
-            # We need to ensure 'docker login' happened on the server at least once or make the image public.
-            # Assuming public image or logged in manually once.
+            cd ~/FrostByte-API || mkdir -p ~/FrostByte-API && cd ~/FrostByte-API
+
+            # A. Fix Permissions (Ensure user owns the directory and files)
+            echo 'Fixing permissions...'
+            sudo chown -R ${{ secrets.USERNAME }}:${{ secrets.USERNAME }} .
+
+            # B. Create/Overwrite .env file from Secrets
+            # This ensures the running container ALWAYS uses the correct secrets
+            echo 'Updating .env file...'
+            cat <<EOF > .env
+            SERVER_PORT=8080
+            DB_HOST=db
+            DB_PORT=3306
+            DB_USER=root
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            DB_NAME=${{ secrets.DB_NAME }}
+            JWT_SECRET=${{ secrets.JWT_SECRET }}
+            EOF
+
+            # C. Deploy
+            echo 'Pulling latest image...'
+            docker-compose pull api
             
-            docker-compose pull &&
-            docker-compose down &&
-            docker-compose up -d --remove-orphans
+            echo 'Restarting services...'
+            # 'up -d' is smarter than 'down && up'. It only recreates changed containers.
+            # We add --force-recreate to ensure it picks up the new .env if variables changed.
+            docker-compose up -d --force-recreate --remove-orphans
+            
+            # D. Cleanup
+            docker image prune -f
           "
