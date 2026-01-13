@@ -128,20 +128,26 @@ func (h *OrderHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *OrderHandler) GetByUser(w http.ResponseWriter, r *http.Request) {
-	username := chi.URLParam(r, "username")
-	if username == "" {
+	param := chi.URLParam(r, "username")
+	if param == "" {
 		http.Error(w, "Username required", http.StatusBadRequest)
 		return
 	}
 
 	// Security Check
-	tokenUsername, ok := GetUsernameFromContext(r.Context())
+	ctx := r.Context()
+	tokenUsername, ok := GetUsernameFromContext(ctx)
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+	tokenUserID, ok := GetUserIDFromContext(ctx)
 	if !ok {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
-	roles, _ := GetRolesFromContext(r.Context())
+	roles, _ := GetRolesFromContext(ctx)
 	isStaff := false
 	for _, role := range roles {
 		if role == "Admin" || role == "Cashier" {
@@ -150,17 +156,31 @@ func (h *OrderHandler) GetByUser(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if username != tokenUsername && !isStaff {
-		http.Error(w, "Forbidden: You can only view your own orders", http.StatusForbidden)
-		return
+	var orders []domain.Order
+	var err error
+
+	// Check if the param is a User ID (numeric) or Username
+	if targetID, errParse := strconv.ParseUint(param, 10, 32); errParse == nil {
+		// It is a UserID
+		if uint(targetID) != tokenUserID && !isStaff {
+			http.Error(w, "Forbidden: You can only view your own orders", http.StatusForbidden)
+			return
+		}
+		orders, err = h.service.GetOrdersByUserID(uint(targetID))
+	} else {
+		// It is a Username
+		if param != tokenUsername && !isStaff {
+			http.Error(w, "Forbidden: You can only view your own orders", http.StatusForbidden)
+			return
+		}
+		orders, err = h.service.GetOrdersByUser(param)
 	}
 
-	orders, err := h.service.GetOrdersByUser(username)
 	if err != nil {
 		// If user not found (or other error), return the specific message requested
 		w.WriteHeader(http.StatusNotFound)
 		json.NewEncoder(w).Encode(map[string]string{
-			"message": "No Results: No orders exist for the user " + username,
+			"message": "No Results: No orders exist for the user " + param,
 		})
 		return
 	}
@@ -168,7 +188,7 @@ func (h *OrderHandler) GetByUser(w http.ResponseWriter, r *http.Request) {
 	if len(orders) == 0 {
 		w.WriteHeader(http.StatusOK) // Or NotFound? User said "No Results" message.
 		json.NewEncoder(w).Encode(map[string]string{
-			"message": "No Results: No orders exist for the user " + username,
+			"message": "No Results: No orders exist for the user " + param,
 		})
 		return
 	}
