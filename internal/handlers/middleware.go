@@ -13,7 +13,11 @@ import (
 
 type contextKey string
 
-const userIDKey contextKey = "user_id"
+const (
+	userIDKey   contextKey = "user_id"
+	usernameKey contextKey = "username"
+	rolesKey    contextKey = "roles"
+)
 
 // Simple Rate Limiter
 type rateLimiter struct {
@@ -121,8 +125,23 @@ func AuthMiddleware(authService *service.AuthService) func(http.Handler) http.Ha
 				http.Error(w, "User ID not found in token", http.StatusUnauthorized)
 				return
 			}
+			
+			// Extract username and roles (if available)
+			username, _ := claims["username"].(string)
+			
+			var roles []string
+			if rolesClaim, ok := claims["roles"].([]interface{}); ok {
+				for _, r := range rolesClaim {
+					if rStr, ok := r.(string); ok {
+						roles = append(roles, rStr)
+					}
+				}
+			}
 
 			ctx := context.WithValue(r.Context(), userIDKey, uint(userIDFloat))
+			ctx = context.WithValue(ctx, usernameKey, username)
+			ctx = context.WithValue(ctx, rolesKey, roles)
+			
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
@@ -173,4 +192,14 @@ func RoleMiddleware(userService *service.UserService, allowedRoles ...string) fu
 func GetUserIDFromContext(ctx context.Context) (uint, bool) {
 	userID, ok := ctx.Value(userIDKey).(uint)
 	return userID, ok
+}
+
+func GetUsernameFromContext(ctx context.Context) (string, bool) {
+	username, ok := ctx.Value(usernameKey).(string)
+	return username, ok
+}
+
+func GetRolesFromContext(ctx context.Context) ([]string, bool) {
+	roles, ok := ctx.Value(rolesKey).([]string)
+	return roles, ok
 }
