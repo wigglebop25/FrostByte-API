@@ -134,10 +134,30 @@ func (h *OrderHandler) GetByUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Security Check
+	tokenUsername, ok := GetUsernameFromContext(r.Context())
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	roles, _ := GetRolesFromContext(r.Context())
+	isStaff := false
+	for _, role := range roles {
+		if role == "Admin" || role == "Cashier" {
+			isStaff = true
+			break
+		}
+	}
+
+	if username != tokenUsername && !isStaff {
+		http.Error(w, "Forbidden: You can only view your own orders", http.StatusForbidden)
+		return
+	}
+
 	orders, err := h.service.GetOrdersByUser(username)
 	if err != nil {
 		// If user not found (or other error), return the specific message requested
-		// We could be more specific checking error type, but for now:
 		w.WriteHeader(http.StatusNotFound)
 		json.NewEncoder(w).Encode(map[string]string{
 			"message": "No Results: No orders exist for the user " + username,
