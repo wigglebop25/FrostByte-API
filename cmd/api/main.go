@@ -24,10 +24,6 @@ func main() {
 	// Initialize Database
 	database.Connect(cfg.DSN())
 
-	// Initialize WebSocket Hub
-	hub := websocket.NewHub()
-	go hub.Run()
-
 	// Initialize Repositories
 	userRepo := repository.NewUserRepository(database.DB)
 	productRepo := repository.NewProductRepository(database.DB)
@@ -37,6 +33,11 @@ func main() {
 
 	// Initialize Services
 	authService := service.NewAuthService(userRepo, roleRepo, cfg.JWTSecret)
+
+	// Initialize WebSocket Hub
+	hub := websocket.NewHub(authService)
+	go hub.Run()
+
 	productService := service.NewProductService(productRepo, categoryRepo)
 	categoryService := service.NewCategoryService(categoryRepo, productRepo)
 	orderService := service.NewOrderService(orderRepo, productRepo, userRepo, hub)
@@ -156,9 +157,11 @@ func main() {
 			})
 		})
 
-		// WebSocket
-		r.Get("/ws/orders", hub.ServeWs)
+		// WebSocket moved to root level to match docs
 	})
+
+	// WebSocket Endpoint
+	r.Get("/ws", hub.ServeWs)
 
 	log.Printf("Server starting on port %s (HTTPS)", cfg.ServerPort)
 	// Check if certs exist
