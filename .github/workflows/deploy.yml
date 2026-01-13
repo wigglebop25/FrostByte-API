@@ -40,22 +40,23 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
 
-          # 2. Copy Configuration Files
+          # 2. Ensure Remote Directory Exists
+          # We run this BEFORE scp to avoid "dest open failure"
+          ssh -i ~/.ssh/id_rsa ${{ secrets.USERNAME }}@${{ secrets.HOST }} "mkdir -p ~/FrostByte-API"
+
+          # 3. Copy Configuration Files
           scp -i ~/.ssh/id_rsa ./compose.yml ${{ secrets.USERNAME }}@${{ secrets.HOST }}:~/FrostByte-API/
 
-          # 3. Remote Deployment Script
+          # 4. Remote Deployment Script
           ssh -i ~/.ssh/id_rsa ${{ secrets.USERNAME }}@${{ secrets.HOST }} "
-            # Stop on error
             set -e
-            
-            cd ~/FrostByte-API || mkdir -p ~/FrostByte-API && cd ~/FrostByte-API
+            cd ~/FrostByte-API
 
-            # A. Fix Permissions (Ensure user owns the directory and files)
+            # Fix Permissions
             echo 'Fixing permissions...'
             sudo chown -R ${{ secrets.USERNAME }}:${{ secrets.USERNAME }} .
 
-            # B. Create/Overwrite .env file from Secrets
-            # This ensures the running container ALWAYS uses the correct secrets
+            # Create/Overwrite .env file from Secrets
             echo 'Updating .env file...'
             cat <<EOF > .env
             SERVER_PORT=8080
@@ -67,15 +68,13 @@ jobs:
             JWT_SECRET=${{ secrets.JWT_SECRET }}
             EOF
 
-            # C. Deploy
+            # Deploy
             echo 'Pulling latest image...'
             docker-compose pull api
             
             echo 'Restarting services...'
-            # 'up -d' is smarter than 'down && up'. It only recreates changed containers.
-            # We add --force-recreate to ensure it picks up the new .env if variables changed.
             docker-compose up -d --force-recreate --remove-orphans
             
-            # D. Cleanup
+            # Cleanup
             docker image prune -f
           "
