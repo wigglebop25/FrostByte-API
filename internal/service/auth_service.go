@@ -61,10 +61,17 @@ func (s *AuthService) Login(username, password string) (string, error) {
 		return "", errors.New("invalid credentials")
 	}
 
+	var roleNames []string
+	for _, role := range user.Roles {
+		roleNames = append(roleNames, role.Name)
+	}
+
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"user_id": user.UserID,
-		"exp":     time.Now().Add(time.Hour * 24).Unix(),
-		"iss":     "frostbyte-api",
+		"user_id":  user.UserID,
+		"username": user.Username,
+		"roles":    roleNames,
+		"exp":      time.Now().Add(time.Hour * 24).Unix(),
+		"iss":      "frostbyte-api",
 	})
 
 	tokenString, err := token.SignedString(s.jwtSecret)
@@ -100,11 +107,17 @@ func (s *AuthService) RefreshToken(tokenString string) (string, error) {
 		return "", errors.New("user ID not found in token")
 	}
 
+	// Carry over username and roles
+	username, _ := claims["username"].(string)
+	roles, _ := claims["roles"].([]interface{}) // JWT parses arrays as []interface{}
+
 	// Generate new token
 	newToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"user_id": uint(userIDFloat),
-		"exp":     time.Now().Add(time.Hour * 24).Unix(),
-		"iss":     "frostbyte-api",
+		"user_id":  uint(userIDFloat),
+		"username": username,
+		"roles":    roles,
+		"exp":      time.Now().Add(time.Hour * 24).Unix(),
+		"iss":      "frostbyte-api",
 	})
 
 	return newToken.SignedString(s.jwtSecret)
