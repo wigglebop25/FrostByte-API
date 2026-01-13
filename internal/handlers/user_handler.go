@@ -63,6 +63,28 @@ func (h *UserHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Security Check
+	tokenUserID, ok := GetUserIDFromContext(r.Context())
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	roles, _ := GetRolesFromContext(r.Context())
+	isAdmin := false
+	for _, role := range roles {
+		if role == "Admin" {
+			isAdmin = true
+			break
+		}
+	}
+
+	// Allow if self-access or Admin
+	if uint(id) != tokenUserID && !isAdmin {
+		http.Error(w, "Forbidden: You do not have access to this user", http.StatusForbidden)
+		return
+	}
+
 	user, err := h.service.GetUserByID(uint(id))
 	if err != nil {
 		http.Error(w, "User not found", http.StatusNotFound)
