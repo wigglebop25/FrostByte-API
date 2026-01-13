@@ -69,6 +69,7 @@ func (s *AuthService) Login(username, password string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"user_id":  user.UserID,
 		"username": user.Username,
+		"sub":      user.Username, // Standard claim for User Identity
 		"roles":    roleNames,
 		"exp":      time.Now().Add(time.Hour * 24).Unix(),
 		"iss":      "frostbyte-api",
@@ -107,14 +108,16 @@ func (s *AuthService) RefreshToken(tokenString string) (string, error) {
 		return "", errors.New("user ID not found in token")
 	}
 
-	// Carry over username and roles
+	// Carry over username, sub, and roles
 	username, _ := claims["username"].(string)
-	roles, _ := claims["roles"].([]interface{}) // JWT parses arrays as []interface{}
+	sub, _ := claims["sub"].(string)
+	roles, _ := claims["roles"].([]interface{})
 
 	// Generate new token
 	newToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"user_id":  uint(userIDFloat),
 		"username": username,
+		"sub":      sub,
 		"roles":    roles,
 		"exp":      time.Now().Add(time.Hour * 24).Unix(),
 		"iss":      "frostbyte-api",
