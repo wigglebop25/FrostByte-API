@@ -12,7 +12,13 @@ import (
 type JSONTime time.Time
 
 func (t JSONTime) MarshalJSON() ([]byte, error) {
-	stamp := fmt.Sprintf("\"%s\"", time.Time(t).Format("January 02, 2006 03:04 PM"))
+	loc, err := time.LoadLocation("Asia/Manila")
+	if err != nil {
+		// Fallback to UTC or Local if timezone is missing (should not happen with our Dockerfile)
+		loc = time.UTC
+	}
+	formatted := time.Time(t).In(loc).Format("January 02, 2006 03:04 PM")
+	stamp := fmt.Sprintf("\"%s\"", formatted)
 	return []byte(stamp), nil
 }
 
