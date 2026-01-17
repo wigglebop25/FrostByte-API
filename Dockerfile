@@ -19,6 +19,9 @@ FROM alpine:latest
 # Install timezone data and certificates
 RUN apk add --no-cache tzdata ca-certificates
 
+# Ensure Go can find the timezone data
+ENV ZONEINFO=/usr/share/zoneinfo
+
 # Create a non-root user
 RUN adduser -D frostbyte
 USER frostbyte
