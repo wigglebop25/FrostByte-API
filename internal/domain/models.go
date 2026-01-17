@@ -14,7 +14,7 @@ type JSONTime time.Time
 func (t JSONTime) MarshalJSON() ([]byte, error) {
 	loc, err := time.LoadLocation("Asia/Manila")
 	if err != nil {
-		// Fallback to UTC or Local if timezone is missing (should not happen with our Dockerfile)
+		fmt.Printf("Error loading location 'Asia/Manila': %v\n", err) // Log the error to stdout
 		loc = time.UTC
 	}
 	formatted := time.Time(t).In(loc).Format("January 02, 2006 03:04 PM")
