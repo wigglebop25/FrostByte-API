@@ -101,13 +101,21 @@ func (s *OrderService) UpdateOrderStatus(id uint, status string) error {
 		return err
 	}
 
-	// Broadcast the status update
+	// Fetch the updated order with all details to send in the broadcast
+	updatedOrder, err := s.repo.FindByID(id)
+	if err != nil {
+		// If we can't fetch it, log it (or just ignore and send partial), but better to return error?
+		// For now, let's just proceed with partial if fetch fails, but FindByID should work.
+		return err
+	}
+
+	// Broadcast the full updated order
 	// Target: The User who owns the order + All Staff (Admin/Cashier)
 	s.hub.Broadcast(map[string]interface{}{
-		"order_id": id,
-		"status":   status,
-		"type":     "STATUS_UPDATE",
-		"user_id":  order.UserID,
+		"type":    "ORDER_UPDATE",
+		"order":   updatedOrder, // Send the full object
+		"status":  status,       // Keep for backward compatibility/easy access
+		"user_id": order.UserID,
 	}, order.UserID, []string{"Admin", "Cashier"})
 
 	return nil
