@@ -12,11 +12,8 @@ import (
 type JSONTime time.Time
 
 func (t JSONTime) MarshalJSON() ([]byte, error) {
-	loc, err := time.LoadLocation("Asia/Manila")
-	if err != nil {
-		fmt.Printf("Error loading location 'Asia/Manila': %v\n", err) // Log the error to stdout
-		loc = time.UTC
-	}
+	// Hardcode Asia/Manila offset (UTC+8) to avoid tzdata dependency issues
+	loc := time.FixedZone("Asia/Manila", 8*60*60)
 	formatted := time.Time(t).In(loc).Format("January 02, 2006 03:04 PM")
 	stamp := fmt.Sprintf("\"%s\"", formatted)
 	return []byte(stamp), nil
