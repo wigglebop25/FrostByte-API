@@ -16,6 +16,9 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o main ./cmd/api
 # Run stage
 FROM alpine:latest
 
+# Install timezone data and certificates
+RUN apk add --no-cache tzdata ca-certificates
+
 # Create a non-root user
 RUN adduser -D frostbyte
 USER frostbyte
