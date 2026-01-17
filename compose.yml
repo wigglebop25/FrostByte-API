@@ -5,6 +5,7 @@ services:
     environment:
       MYSQL_DATABASE: ${DB_NAME:-frost_db}
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-password}
+      TZ: Asia/Manila
     ports:
       # Only allow access from the host machine (localhost), not the internet
       - "127.0.0.1:3307:3306"
@@ -29,6 +30,7 @@ services:
       DB_PASSWORD: ${DB_PASSWORD:-password}
       DB_NAME: ${DB_NAME:-frost_db}
       JWT_SECRET: ${JWT_SECRET:-your_super_secret_key}
+      TZ: Asia/Manila
     volumes:
       # Mount the .env file from the host
       - ./.env:/app/.env
