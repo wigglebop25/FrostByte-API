@@ -10,8 +10,11 @@ RUN ls -laR
 # Restore dependencies
 RUN go mod download
 
-# Build
+# Build API binary
 RUN CGO_ENABLED=0 GOOS=linux go build -o main ./cmd/api
+
+# Build Seeder binary
+RUN CGO_ENABLED=0 GOOS=linux go build -o seeder ./cmd/seeder
 
 # Run stage
 FROM alpine:latest
@@ -29,6 +32,7 @@ USER frostbyte
 WORKDIR /app
 
 COPY --from=builder /app/main .
+COPY --from=builder /app/seeder .
 
 # NOTE: In production, mount .env, server.crt, and server.key using volumes.
 # Do NOT copy them here to avoid baking secrets into the image.
