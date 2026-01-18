@@ -1,6 +1,7 @@
 package seeder
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"time"
