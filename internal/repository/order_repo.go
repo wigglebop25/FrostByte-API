@@ -13,6 +13,12 @@ func NewOrderRepository(db *gorm.DB) *OrderRepository {
 	return &OrderRepository{db: db}
 }
 
+type DailyRevenueStats struct {
+	Date       string  `json:"date"`
+	Revenue    float64 `json:"revenue"`
+	OrderCount int64   `json:"order_count"`
+}
+
 func (r *OrderRepository) Create(order *domain.Order) error {
 	return r.db.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Create(order).Error; err != nil {
@@ -81,24 +87,24 @@ func (r *OrderRepository) GetByRole(roleName string) ([]domain.Order, error) {
 	return orders, err
 }
 
-func (r *OrderRepository) GetAnalytics() (float64, int64, map[string]int64, error) {
+func (r *OrderRepository) GetAnalytics() (float64, int64, map[string]int64, []DailyRevenueStats, error) {
 	var totalRevenue float64
 	var totalOrders int64
 
 	// Calculate revenue only for COMPLETED and READY orders
 	if err := r.db.Model(&domain.Order{}).Where("status IN ?", []string{"COMPLETED", "READY"}).Select("COALESCE(SUM(total_amount), 0)").Scan(&totalRevenue).Error; err != nil {
-		return 0, 0, nil, err
+		return 0, 0, nil, nil, err
 	}
 
 	if err := r.db.Model(&domain.Order{}).Count(&totalOrders).Error; err != nil {
-		return 0, 0, nil, err
+		return 0, 0, nil, nil, err
 	}
 
 	// Calculate counts for each status
 	statusCounts := make(map[string]int64)
 	rows, err := r.db.Model(&domain.Order{}).Select("status, count(*)").Group("status").Rows()
 	if err != nil {
-		return 0, 0, nil, err
+		return 0, 0, nil, nil, err
 	}
 	defer rows.Close()
 
@@ -106,7 +112,7 @@ func (r *OrderRepository) GetAnalytics() (float64, int64, map[string]int64, erro
 		var status string
 		var count int64
 		if err := rows.Scan(&status, &count); err != nil {
-			return 0, 0, nil, err
+			return 0, 0, nil, nil, err
 		}
 		statusCounts[status] = count
 	}
@@ -119,5 +125,46 @@ func (r *OrderRepository) GetAnalytics() (float64, int64, map[string]int64, erro
 		}
 	}
 
-	return totalRevenue, totalOrders, statusCounts, nil
+	// Get Daily Revenue Stats for the last 7 days
+	var dailyStats []DailyRevenueStats
+	// Using raw SQL for date grouping as GORM specific features can vary across DBs, but this is MySQL syntax compatible (users mentioned MySQL driver in database.go)
+	// Query dates where created_at >= 7 days ago
+	// Note: We cast created_at to DATE to group by day
+	err = r.db.Raw(`
+		SELECT 
+			DATE(created_at) as date, 
+			SUM(total_amount) as revenue, 
+			COUNT(order_id) as order_count 
+		FROM orders 
+		WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY) 
+			AND status IN ('COMPLETED', 'READY') 
+		GROUP BY DATE(created_at) 
+		ORDER BY date ASC
+	`).Scan(&dailyStats).Error
+
+	if err != nil {
+		return 0, 0, nil, nil, err
+	}
+
+	return totalRevenue, totalOrders, statusCounts, dailyStats, nil
+}
+
+func (r *OrderRepository) GetRevenueAnalytics(startDate, endDate string) ([]DailyRevenueStats, error) {
+	var dailyStats []DailyRevenueStats
+	err := r.db.Raw(`
+		SELECT 
+			DATE(created_at) as date, 
+			SUM(total_amount) as revenue, 
+			COUNT(order_id) as order_count 
+		FROM orders 
+		WHERE DATE(created_at) >= ? AND DATE(created_at) <= ? 
+			AND status IN ('COMPLETED', 'READY') 
+		GROUP BY DATE(created_at) 
+		ORDER BY date ASC
+	`, startDate, endDate).Scan(&dailyStats).Error
+
+	if err != nil {
+		return nil, err
+	}
+	return dailyStats, nil
 }
