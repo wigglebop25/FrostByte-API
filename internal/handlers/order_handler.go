@@ -246,3 +246,26 @@ func (h *OrderHandler) GetAnalytics(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(analytics)
 }
+
+func (h *OrderHandler) GetRevenueAnalytics(w http.ResponseWriter, r *http.Request) {
+	startDate := r.URL.Query().Get("start_date")
+	endDate := r.URL.Query().Get("end_date")
+
+	if startDate == "" || endDate == "" {
+		http.Error(w, "start_date and end_date query parameters are required", http.StatusBadRequest)
+		return
+	}
+
+	analytics, err := h.service.GetRevenueAnalytics(startDate, endDate)
+	if err != nil {
+		// Differentiate between validation errors and internal errors if needed, but error message usually helps
+		if err.Error() == "invalid start_date format (YYYY-MM-DD)" || err.Error() == "invalid end_date format (YYYY-MM-DD)" || err.Error() == "start_date cannot be after end_date" {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+		} else {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+		return
+	}
+
+	json.NewEncoder(w).Encode(analytics)
+}
