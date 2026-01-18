@@ -269,22 +269,21 @@ func (s *Seeder) seedProducts() error {
 
 // seedUsers seeds the users table with test users
 func (s *Seeder) seedUsers() error {
-	// Get default passwords from environment variables or use safe defaults for development
-	// In production, these should ALWAYS be set via environment variables
+	// Get passwords from environment variables.
+	// CRITICAL: Fail if not set to prevent insecure defaults in production.
 	adminPwd := os.Getenv("SEED_ADMIN_PASSWORD")
 	if adminPwd == "" {
-		adminPwd = "admin123" // Fallback only for local dev
-		log.Println("WARNING: Using default admin password. Set SEED_ADMIN_PASSWORD in production!")
+		return fmt.Errorf("CRITICAL ERROR: SEED_ADMIN_PASSWORD environment variable is not set")
 	}
 
 	cashierPwd := os.Getenv("SEED_CASHIER_PASSWORD")
 	if cashierPwd == "" {
-		cashierPwd = "cashier123"
+		return fmt.Errorf("CRITICAL ERROR: SEED_CASHIER_PASSWORD environment variable is not set")
 	}
 
 	customerPwd := os.Getenv("SEED_CUSTOMER_PASSWORD")
 	if customerPwd == "" {
-		customerPwd = "customer123"
+		return fmt.Errorf("CRITICAL ERROR: SEED_CUSTOMER_PASSWORD environment variable is not set")
 	}
 
 	users := []struct {
