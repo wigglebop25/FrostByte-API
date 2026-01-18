@@ -5,6 +5,7 @@ import (
 	"frostbyte-api/internal/domain"
 	"frostbyte-api/internal/repository"
 	"frostbyte-api/internal/websocket"
+	"time"
 )
 
 type OrderService struct {
@@ -122,14 +123,122 @@ func (s *OrderService) UpdateOrderStatus(id uint, status string) error {
 }
 
 func (s *OrderService) GetSalesAnalytics() (map[string]interface{}, error) {
-	totalRevenue, totalOrders, statusCounts, err := s.repo.GetAnalytics()
+	totalRevenue, totalOrders, statusCounts, dailyStats, err := s.repo.GetAnalytics()
 	if err != nil {
 		return nil, err
 	}
 
+	// Gap Filling Logic for the last 7 days
+	// 1. Create a map for quick lookup
+	statsMap := make(map[string]repository.DailyRevenueStats)
+	for _, stat := range dailyStats {
+		// Ensure date format matches YYYY-MM-DD
+		// The generic DB driver might return date as time.Time or string depending on driver settings.
+		// Since we used DATE() in SQL, it usually comes as string or time.Time with 00:00:00.
+		// We'll trust the string representation from `DailyRevenueStats.Date` for now, assuming the repo handled scanning correctly.
+		// However, SQL DATE() often scans into string in Go if not parsed.
+		// Let's assume the Repo scan worked and Date is "YYYY-MM-DD".
+		statsMap[stat.Date] = stat
+	}
+
+	var revenueTrend []repository.DailyRevenueStats
+	// Use local time for generating the last 7 days.
+	// Note: Ideally, we should align this with the DB timezone.
+	// Assuming system time is consistent with DB.
+	now := time.Now()
+	for i := 6; i >= 0; i-- {
+		date := now.AddDate(0, 0, -i).Format("2006-01-02")
+
+		if stat, exists := statsMap[date]; exists {
+			revenueTrend = append(revenueTrend, stat)
+		} else {
+			revenueTrend = append(revenueTrend, repository.DailyRevenueStats{
+				Date:       date,
+				Revenue:    0,
+				OrderCount: 0,
+			})
+		}
+	}
+
 	return map[string]interface{}{
-		"total_revenue": totalRevenue,
-		"total_orders":  totalOrders,
-		"status_counts": statusCounts,
+		"summary": map[string]interface{}{
+			"total_revenue": totalRevenue,
+			"total_orders":  totalOrders,
+			"status_counts": statusCounts,
+		},
+		"revenue_trend": revenueTrend,
+	}, nil
+}
+
+func (s *OrderService) GetRevenueAnalytics(startDateStr, endDateStr string) (*domain.RevenueAnalyticsResponse, error) {
+	// 1. Parse dates
+	layout := "2006-01-02"
+	start, err := time.Parse(layout, startDateStr)
+	if err != nil {
+		return nil, errors.New("invalid start_date format (YYYY-MM-DD)")
+	}
+	end, err := time.Parse(layout, endDateStr)
+	if err != nil {
+		return nil, errors.New("invalid end_date format (YYYY-MM-DD)")
+	}
+
+	if start.After(end) {
+		return nil, errors.New("start_date cannot be after end_date")
+	}
+
+	// 2. Fetch data
+	dailyStats, err := s.repo.GetRevenueAnalytics(startDateStr, endDateStr)
+	if err != nil {
+		return nil, err
+	}
+
+	// 3. Gap Filling
+	statsMap := make(map[string]repository.DailyRevenueStats)
+	for _, stat := range dailyStats {
+		// Ensure date format is YYYY-MM-DD (take first 10 chars if it includes time)
+		dateKey := stat.Date
+		if len(dateKey) > 10 {
+			dateKey = dateKey[:10]
+		}
+		statsMap[dateKey] = stat
+	}
+
+	var filledData []domain.DailyData
+	var totalRevenue float64
+	var totalOrders int64
+
+	for d := start; !d.After(end); d = d.AddDate(0, 0, 1) {
+		dateStr := d.Format(layout)
+		stat, exists := statsMap[dateStr]
+
+		revenue := 0.0
+		orderCount := int64(0)
+
+		if exists {
+			revenue = stat.Revenue
+			orderCount = stat.OrderCount
+		}
+
+		filledData = append(filledData, domain.DailyData{
+			Date:       dateStr,
+			DayName:    d.Weekday().String(),
+			Revenue:    revenue,
+			OrderCount: orderCount,
+		})
+
+		totalRevenue += revenue
+		totalOrders += orderCount
+	}
+
+	return &domain.RevenueAnalyticsResponse{
+		Period: domain.Period{
+			Start: startDateStr,
+			End:   endDateStr,
+		},
+		Summary: domain.Summary{
+			TotalRevenue: totalRevenue,
+			TotalOrders:  totalOrders,
+		},
+		DailyData: filledData,
 	}, nil
 }
