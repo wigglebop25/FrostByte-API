@@ -30,6 +30,9 @@ services:
       DB_PASSWORD: ${DB_PASSWORD:-password}
       DB_NAME: ${DB_NAME:-frost_db}
       JWT_SECRET: ${JWT_SECRET:-your_super_secret_key}
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD}
+      SEED_CASHIER_PASSWORD: ${SEED_CASHIER_PASSWORD}
+      SEED_CUSTOMER_PASSWORD: ${SEED_CUSTOMER_PASSWORD}
       TZ: Asia/Manila
     volumes:
       # Mount the .env file from the host
