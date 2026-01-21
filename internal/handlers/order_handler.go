@@ -72,12 +72,34 @@ func (h *OrderHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// Parse Query Params
+	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
+	if page < 1 {
+		page = 1
+	}
+	limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
+	if limit < 1 {
+		limit = 50 // Default
+	}
+	status := r.URL.Query().Get("status")
+	date := r.URL.Query().Get("date")
+	search := r.URL.Query().Get("search")
+
+	filter := domain.OrderFilter{
+		Page:   page,
+		Limit:  limit,
+		Status: status,
+		Date:   date,
+		Search: search,
+	}
+
 	var orders []domain.Order
 	if isStaff {
-		// Staff sees all orders
-		orders, err = h.service.GetAllOrders()
+		// Staff sees all orders with filters
+		orders, err = h.service.GetAllOrders(filter)
 	} else {
 		// Customer only sees their own orders
+		// TODO: Apply filtering to GetOrdersByUserID too if needed, for now keep simple as per request
 		orders, err = h.service.GetOrdersByUserID(userID)
 	}
 
@@ -222,13 +244,14 @@ func (h *OrderHandler) UpdateStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.service.UpdateOrderStatus(uint(id), req.Status); err != nil {
+	updatedOrder, err := h.service.UpdateOrderStatus(uint(id), req.Status)
+	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{"message": "Status updated"})
+	json.NewEncoder(w).Encode(updatedOrder)
 }
 
 func (h *OrderHandler) GetAnalytics(w http.ResponseWriter, r *http.Request) {
@@ -239,6 +262,31 @@ func (h *OrderHandler) GetAnalytics(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(analytics)
+}
+
+func (h *OrderHandler) GetDashboardAnalytics(w http.ResponseWriter, r *http.Request) {
+	// Re-use the service logic but format the response specifically for the dashboard
+	rawAnalytics, err := h.service.GetSalesAnalytics()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	summary := rawAnalytics["summary"].(map[string]interface{})
+	revenueTrend := rawAnalytics["revenue_trend"]
+
+	// Extract pending count from status_counts
+	statusCounts := summary["status_counts"].(map[string]int64)
+	pendingCount := statusCounts["PENDING"]
+
+	response := map[string]interface{}{
+		"total_revenue": summary["total_revenue"],
+		"total_orders":  summary["total_orders"],
+		"pending_count": pendingCount,
+		"daily_revenue": revenueTrend,
+	}
+
+	json.NewEncoder(w).Encode(response)
 }
 
 func (h *OrderHandler) GetRevenueAnalytics(w http.ResponseWriter, r *http.Request) {
