@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"strings"
 
@@ -19,15 +20,15 @@ const (
 	rolesKey    contextKey = "roles"
 )
 
-// Simple Rate Limiter
+// Token Bucket Rate Limiter
 type rateLimiter struct {
-	mu      sync.Mutex
+	mu       sync.Mutex
 	visitors map[string]*visitor
 }
 
 type visitor struct {
-	lastSeen time.Time
-	count    int
+	tokens     float64
+	lastUpdate time.Time
 }
 
 var limiter = &rateLimiter{
@@ -38,31 +39,43 @@ func (rl *rateLimiter) allow(ip string) bool {
 	rl.mu.Lock()
 	defer rl.mu.Unlock()
 
+	rate := 1.0 // 1 request per second (average)
+	burst := 10.0
+	now := time.Now()
+
 	v, exists := rl.visitors[ip]
 	if !exists {
-		rl.visitors[ip] = &visitor{time.Now(), 1}
+		rl.visitors[ip] = &visitor{tokens: burst - 1, lastUpdate: now}
 		return true
 	}
 
-	if time.Since(v.lastSeen) > time.Minute {
-		v.lastSeen = time.Now()
-		v.count = 1
+	// Refill tokens
+	elapsed := now.Sub(v.lastUpdate).Seconds()
+	v.tokens += elapsed * rate
+	if v.tokens > burst {
+		v.tokens = burst
+	}
+	v.lastUpdate = now
+
+	if v.tokens >= 1 {
+		v.tokens--
 		return true
 	}
 
-	if v.count >= 60 { // Limit: 60 requests per minute
-		return false
-	}
-
-	v.count++
-	return true
+	return false
 }
 
 func RateLimitMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ip := strings.Split(r.RemoteAddr, ":")[0]
 		if !limiter.allow(ip) {
-			http.Error(w, "Too Many Requests", http.StatusTooManyRequests)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusTooManyRequests)
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"error":       "RateLimitExceeded",
+				"message":     "You are sending requests too quickly. Please wait.",
+				"retry_after": 5, // Simple static advice
+			})
 			return
 		}
 		next.ServeHTTP(w, r)
