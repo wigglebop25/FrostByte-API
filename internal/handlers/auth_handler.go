@@ -52,33 +52,38 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := h.service.Login(req.Username, req.Password)
+	accessToken, refreshToken, err := h.service.Login(req.Username, req.Password)
 	if err != nil {
 		http.Error(w, "Invalid credentials", http.StatusUnauthorized)
 		return
 	}
 
-	json.NewEncoder(w).Encode(map[string]string{"token": token})
+	json.NewEncoder(w).Encode(map[string]string{
+		"access_token":  accessToken,
+		"refresh_token": refreshToken,
+	})
 }
 
 func (h *AuthHandler) Refresh(w http.ResponseWriter, r *http.Request) {
-	authHeader := r.Header.Get("Authorization")
-	if authHeader == "" {
-		http.Error(w, "Authorization header required", http.StatusUnauthorized)
+	var req struct {
+		RefreshToken string `json:"refresh_token"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
 
-	parts := strings.Split(authHeader, " ")
-	if len(parts) != 2 || parts[0] != "Bearer" {
-		http.Error(w, "Invalid authorization header", http.StatusUnauthorized)
+	if req.RefreshToken == "" {
+		http.Error(w, "refresh_token required", http.StatusBadRequest)
 		return
 	}
 
-	newToken, err := h.service.RefreshToken(parts[1])
+	newAccessToken, err := h.service.RefreshToken(req.RefreshToken)
 	if err != nil {
-		http.Error(w, "Invalid or expired token", http.StatusUnauthorized)
+		http.Error(w, "Invalid or expired refresh token", http.StatusUnauthorized)
 		return
 	}
 
-	json.NewEncoder(w).Encode(map[string]string{"token": newToken})
+	json.NewEncoder(w).Encode(map[string]string{"access_token": newAccessToken})
 }
