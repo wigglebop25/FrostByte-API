@@ -3,6 +3,7 @@ package repository
 import (
 	"frostbyte-api/internal/domain"
 	"gorm.io/gorm"
+	"strings"
 )
 
 type OrderRepository struct {
@@ -28,10 +29,39 @@ func (r *OrderRepository) Create(order *domain.Order) error {
 	})
 }
 
-func (r *OrderRepository) GetAll() ([]domain.Order, error) {
+func (r *OrderRepository) GetAll(filter domain.OrderFilter) ([]domain.Order, error) {
 	var orders []domain.Order
-	// Use Distinct to prevent duplicates from joins/preloads
-	err := r.db.Distinct().Preload("Products.Product").Find(&orders).Error
+	query := r.db.Distinct().Preload("Products.Product").Order("created_at DESC")
+
+	if filter.Status != "" {
+		// Support multiple statuses if comma separated
+		statuses := strings.Split(filter.Status, ",")
+		query = query.Where("status IN ?", statuses)
+	}
+
+	if filter.Date != "" {
+		query = query.Where("DATE(created_at) = ?", filter.Date)
+	}
+
+	if filter.Search != "" {
+		// Search by Order ID or Username
+		// Join User to search by username
+		query = query.Joins("JOIN users ON users.user_id = orders.user_id").
+			Where("CAST(orders.order_id AS CHAR) LIKE ? OR users.username LIKE ?", "%"+filter.Search+"%", "%"+filter.Search+"%")
+	}
+
+	if filter.Limit > 0 {
+		offset := (filter.Page - 1) * filter.Limit
+		if offset < 0 {
+			offset = 0
+		}
+		query = query.Limit(filter.Limit).Offset(offset)
+	} else {
+		// Default limit if not specified to prevent massive loads
+		query = query.Limit(50)
+	}
+
+	err := query.Find(&orders).Error
 	if err == nil {
 		r.calculateLineTotals(orders)
 	}
