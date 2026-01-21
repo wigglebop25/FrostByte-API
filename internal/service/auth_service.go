@@ -51,14 +51,14 @@ func (s *AuthService) Register(username, password string) (*domain.User, error) 
 	return user, nil
 }
 
-func (s *AuthService) Login(username, password string) (string, string, error) {
+func (s *AuthService) Login(username, password string) (*domain.User, string, string, error) {
 	user, err := s.repo.FindByUsername(username)
 	if err != nil {
-		return "", "", errors.New("invalid credentials")
+		return nil, "", "", errors.New("invalid credentials")
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)); err != nil {
-		return "", "", errors.New("invalid credentials")
+		return nil, "", "", errors.New("invalid credentials")
 	}
 
 	var roleNames []string
@@ -77,7 +77,7 @@ func (s *AuthService) Login(username, password string) (string, string, error) {
 	})
 	accessTokenString, err := accessToken.SignedString(s.jwtSecret)
 	if err != nil {
-		return "", "", err
+		return nil, "", "", err
 	}
 
 	// Refresh Token (7 days)
@@ -91,10 +91,10 @@ func (s *AuthService) Login(username, password string) (string, string, error) {
 	})
 	refreshTokenString, err := refreshToken.SignedString(s.jwtSecret)
 	if err != nil {
-		return "", "", err
+		return nil, "", "", err
 	}
 
-	return accessTokenString, refreshTokenString, nil
+	return user, accessTokenString, refreshTokenString, nil
 }
 
 func (s *AuthService) ValidateToken(tokenString string) (*jwt.Token, error) {
