@@ -127,9 +127,7 @@ func (r *OrderRepository) GetAnalytics() (float64, int64, map[string]int64, []Da
 
 	// Get Daily Revenue Stats for the last 7 days
 	var dailyStats []DailyRevenueStats
-	// Using raw SQL for date grouping as GORM specific features can vary across DBs, but this is MySQL syntax compatible (users mentioned MySQL driver in database.go)
-	// Query dates where created_at >= 7 days ago
-	// Note: We cast created_at to DATE to group by day
+	// Using raw SQL for date grouping (MySQL compatible)
 	err = r.db.Raw(`
 		SELECT 
 			DATE(created_at) as date, 
