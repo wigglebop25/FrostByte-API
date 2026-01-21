@@ -54,8 +54,8 @@ func (s *OrderService) CreateOrder(userID uint, items []domain.OrderProduct) (*d
 	return order, nil
 }
 
-func (s *OrderService) GetAllOrders() ([]domain.Order, error) {
-	return s.repo.GetAll()
+func (s *OrderService) GetAllOrders(filter domain.OrderFilter) ([]domain.Order, error) {
+	return s.repo.GetAll(filter)
 }
 
 func (s *OrderService) GetOrderByID(id uint) (*domain.Order, error) {
@@ -78,7 +78,7 @@ func (s *OrderService) GetOrdersByRole(role string) ([]domain.Order, error) {
 	return s.repo.GetByRole(role)
 }
 
-func (s *OrderService) UpdateOrderStatus(id uint, status string) error {
+func (s *OrderService) UpdateOrderStatus(id uint, status string) (*domain.Order, error) {
 	// Validate Status
 	allowedStatuses := map[string]bool{
 		"PENDING":   true,
@@ -89,35 +89,38 @@ func (s *OrderService) UpdateOrderStatus(id uint, status string) error {
 		"CANCELLED": true,
 	}
 	if !allowedStatuses[status] {
-		return errors.New("invalid status: allowed values are PENDING, ACCEPTED, COOKING, READY, COMPLETED, CANCELLED")
+		return nil, errors.New("invalid status: allowed values are PENDING, ACCEPTED, COOKING, READY, COMPLETED, CANCELLED")
 	}
 
 	// Check if order exists
 	order, err := s.repo.FindByID(id)
 	if err != nil {
-		return errors.New("order not found")
+		return nil, errors.New("order not found")
 	}
 
 	if err := s.repo.UpdateStatus(id, status); err != nil {
-		return err
+		return nil, err
 	}
 
 	// Fetch the updated order with all details to send in the broadcast
 	updatedOrder, err := s.repo.FindByID(id)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// Broadcast the full updated order
 	// Target: The User who owns the order + All Staff (Admin/Cashier)
 	s.hub.Broadcast(map[string]interface{}{
-		"type":    "ORDER_UPDATE",
-		"order":   updatedOrder, // Send the full object
-		"status":  status,       // Keep for backward compatibility/easy access
-		"user_id": order.UserID,
+		"event": "ORDER_UPDATED",
+		"data": map[string]interface{}{
+			"order_id":   updatedOrder.OrderID,
+			"status":     updatedOrder.Status,
+			"updated_at": updatedOrder.UpdatedAt,
+			"order":      updatedOrder, // Include full object for potential client use
+		},
 	}, order.UserID, []string{"Admin", "Cashier"})
 
-	return nil
+	return updatedOrder, nil
 }
 
 func (s *OrderService) GetSalesAnalytics() (map[string]interface{}, error) {
