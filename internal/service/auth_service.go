@@ -51,14 +51,14 @@ func (s *AuthService) Register(username, password string) (*domain.User, error) 
 	return user, nil
 }
 
-func (s *AuthService) Login(username, password string) (string, error) {
+func (s *AuthService) Login(username, password string) (string, string, error) {
 	user, err := s.repo.FindByUsername(username)
 	if err != nil {
-		return "", errors.New("invalid credentials")
+		return "", "", errors.New("invalid credentials")
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)); err != nil {
-		return "", errors.New("invalid credentials")
+		return "", "", errors.New("invalid credentials")
 	}
 
 	var roleNames []string
@@ -66,21 +66,35 @@ func (s *AuthService) Login(username, password string) (string, error) {
 		roleNames = append(roleNames, role.Name)
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+	// Access Token (15 minutes)
+	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"user_id":  user.UserID,
 		"username": user.Username,
-		"sub":      user.Username, // Standard claim for User Identity
 		"roles":    roleNames,
-		"exp":      time.Now().Add(time.Hour * 24).Unix(),
+		"type":     "access",
+		"exp":      time.Now().Add(time.Minute * 15).Unix(),
 		"iss":      "frostbyte-api",
 	})
-
-	tokenString, err := token.SignedString(s.jwtSecret)
+	accessTokenString, err := accessToken.SignedString(s.jwtSecret)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
-	return tokenString, nil
+	// Refresh Token (7 days)
+	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user_id":  user.UserID,
+		"username": user.Username, // Needed to generate new access token
+		"roles":    roleNames,     // Needed to generate new access token
+		"type":     "refresh",
+		"exp":      time.Now().Add(time.Hour * 24 * 7).Unix(),
+		"iss":      "frostbyte-api",
+	})
+	refreshTokenString, err := refreshToken.SignedString(s.jwtSecret)
+	if err != nil {
+		return "", "", err
+	}
+
+	return accessTokenString, refreshTokenString, nil
 }
 
 func (s *AuthService) ValidateToken(tokenString string) (*jwt.Token, error) {
@@ -103,23 +117,26 @@ func (s *AuthService) RefreshToken(tokenString string) (string, error) {
 		return "", errors.New("invalid token claims")
 	}
 
+	// Verify token type
+	if claims["type"] != "refresh" {
+		return "", errors.New("invalid token type: expected refresh token")
+	}
+
 	userIDFloat, ok := claims["user_id"].(float64)
 	if !ok {
 		return "", errors.New("user ID not found in token")
 	}
 
-	// Carry over username, sub, and roles
 	username, _ := claims["username"].(string)
-	sub, _ := claims["sub"].(string)
 	roles, _ := claims["roles"].([]interface{})
 
-	// Generate new token
+	// Generate new Access Token (15 mins)
 	newToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"user_id":  uint(userIDFloat),
 		"username": username,
-		"sub":      sub,
 		"roles":    roles,
-		"exp":      time.Now().Add(time.Hour * 24).Unix(),
+		"type":     "access",
+		"exp":      time.Now().Add(time.Minute * 15).Unix(),
 		"iss":      "frostbyte-api",
 	})
 
