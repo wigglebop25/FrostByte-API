@@ -153,11 +153,13 @@ func main() {
 			})
 
 			r.Route("/users", func(r chi.Router) {
-				// Self-Access allowed (Security in handler)
+				// Specific routes FIRST
 				r.Get("/me", userHandler.GetMe)
+				
+				// Dynamic routes SECOND
 				r.Get("/{id}", userHandler.GetByID)
 
-				// Admin Only
+				// Admin Only Group
 				r.Group(func(r chi.Router) {
 					r.Use(handlers.AdminMiddleware(userService))
 					r.Post("/", userHandler.Create)
