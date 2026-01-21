@@ -109,9 +109,7 @@ func (h *Hub) Run() {
 					}
 				}
 
-				// Check UserID (Specific Customer)
-				// Note: If both Roles and UserID are present, it's an OR condition?
-				// Usually: "Send to User X OR Admins". Let's assume inclusive OR.
+				// Check UserID (Specific Customer) - Inclusive OR logic
 				if !shouldSend && message.UserID > 0 {
 					if client.UserID == message.UserID {
 						shouldSend = true
