@@ -79,7 +79,7 @@ func (s *OrderService) GetOrdersByRole(role string) ([]domain.Order, error) {
 }
 
 func (s *OrderService) UpdateOrderStatus(id uint, status string) error {
-	// 1. Validate Status
+	// Validate Status
 	allowedStatuses := map[string]bool{
 		"PENDING":   true,
 		"ACCEPTED":  true,
@@ -92,7 +92,7 @@ func (s *OrderService) UpdateOrderStatus(id uint, status string) error {
 		return errors.New("invalid status: allowed values are PENDING, ACCEPTED, COOKING, READY, COMPLETED, CANCELLED")
 	}
 
-	// 2. Check if order exists
+	// Check if order exists
 	order, err := s.repo.FindByID(id)
 	if err != nil {
 		return errors.New("order not found")
@@ -105,8 +105,6 @@ func (s *OrderService) UpdateOrderStatus(id uint, status string) error {
 	// Fetch the updated order with all details to send in the broadcast
 	updatedOrder, err := s.repo.FindByID(id)
 	if err != nil {
-		// If we can't fetch it, log it (or just ignore and send partial), but better to return error?
-		// For now, let's just proceed with partial if fetch fails, but FindByID should work.
 		return err
 	}
 
@@ -129,22 +127,15 @@ func (s *OrderService) GetSalesAnalytics() (map[string]interface{}, error) {
 	}
 
 	// Gap Filling Logic for the last 7 days
-	// 1. Create a map for quick lookup
+	// Create a map for quick lookup
 	statsMap := make(map[string]repository.DailyRevenueStats)
 	for _, stat := range dailyStats {
 		// Ensure date format matches YYYY-MM-DD
-		// The generic DB driver might return date as time.Time or string depending on driver settings.
-		// Since we used DATE() in SQL, it usually comes as string or time.Time with 00:00:00.
-		// We'll trust the string representation from `DailyRevenueStats.Date` for now, assuming the repo handled scanning correctly.
-		// However, SQL DATE() often scans into string in Go if not parsed.
-		// Let's assume the Repo scan worked and Date is "YYYY-MM-DD".
 		statsMap[stat.Date] = stat
 	}
 
 	var revenueTrend []repository.DailyRevenueStats
 	// Use local time for generating the last 7 days.
-	// Note: Ideally, we should align this with the DB timezone.
-	// Assuming system time is consistent with DB.
 	now := time.Now()
 	for i := 6; i >= 0; i-- {
 		date := now.AddDate(0, 0, -i).Format("2006-01-02")
