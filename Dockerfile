@@ -3,9 +3,7 @@ FROM golang:1.23-alpine AS builder
 
 WORKDIR /app
 
-# Debug: List what Docker sees
 COPY . .
-RUN ls -laR
 
 # Restore dependencies
 RUN go mod download
