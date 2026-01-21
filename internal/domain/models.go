@@ -96,3 +96,11 @@ type OrderProduct struct {
 	UnitPrice float64 `gorm:"column:unit_price;type:decimal(10,2);not null" json:"unit_price"`
 	LineTotal float64 `gorm:"column:line_total;type:decimal(10,2);->;<-:false" json:"line_total"`
 }
+
+type OrderFilter struct {
+	Status    string
+	Date      string
+	Page      int
+	Limit     int
+	Search    string
+}
