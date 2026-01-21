@@ -40,7 +40,7 @@ func (rl *rateLimiter) allow(ip string) bool {
 	defer rl.mu.Unlock()
 
 	rate := 1.0 // 1 request per second (average)
-	burst := 10.0
+	burst := 20.0
 	now := time.Now()
 
 	v, exists := rl.visitors[ip]
