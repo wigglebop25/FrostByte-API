@@ -169,15 +169,6 @@ func main() {
 	// WebSocket Endpoint
 	r.Get("/ws", hub.ServeWs)
 
-	// Debug: Print all registered routes
-	walkFunc := func(method string, route string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error {
-		log.Printf("[Route] %s %s\n", method, route)
-		return nil
-	}
-	if err := chi.Walk(r, walkFunc); err != nil {
-		log.Printf("Logging err: %s\n", err.Error())
-	}
-
 	log.Printf("Server starting on port %s (HTTPS)", cfg.ServerPort)
 	// Check if certs exist
 	if _, err := os.Stat("server.crt"); err == nil {
