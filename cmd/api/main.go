@@ -147,13 +147,19 @@ func main() {
 				r.Post("/assign", roleHandler.AssignRole)
 			})
 
+			// Support for /api/v1/user/me
+			r.Route("/user", func(r chi.Router) {
+				r.Get("/me", userHandler.GetMe)
+			})
+
 			r.Route("/users", func(r chi.Router) {
 				// Self-Access allowed (Security in handler)
+				r.Get("/me", userHandler.GetMe)
 				r.Get("/{id}", userHandler.GetByID)
 
 				// Admin Only
 				r.Group(func(r chi.Router) {
-					r.Use(handlers.AdminMiddleware(userService)) 
+					r.Use(handlers.AdminMiddleware(userService))
 					r.Post("/", userHandler.Create)
 					r.Get("/search", userHandler.Search)
 					r.Get("/", userHandler.GetAll)
