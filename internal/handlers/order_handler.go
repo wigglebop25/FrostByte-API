@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"frostbyte-api/internal/domain"
+	"frostbyte-api/internal/repository"
 	"frostbyte-api/internal/service"
 	"github.com/go-chi/chi/v5"
 )
@@ -273,17 +274,42 @@ func (h *OrderHandler) GetDashboardAnalytics(w http.ResponseWriter, r *http.Requ
 	}
 
 	summary := rawAnalytics["summary"].(map[string]interface{})
-	revenueTrend := rawAnalytics["revenue_trend"]
+	revenueTrend := rawAnalytics["revenue_trend"].([]repository.DailyRevenueStats)
 
-	// Extract pending count from status_counts
+	// Extract counts
 	statusCounts := summary["status_counts"].(map[string]int64)
-	pendingCount := statusCounts["PENDING"]
+	
+	totalRevenue := summary["total_revenue"].(float64)
+	totalOrders := summary["total_orders"].(int64)
+	
+	pendingOrders := statusCounts["PENDING"]
+	completedOrders := statusCounts["COMPLETED"] // Note: SalesAnalytics might group READY/COMPLETED for revenue, but counts are separate
+	// For "completed_orders" in the context of Avg Order Value, usually implies valid sales. 
+	// The prompt SQL uses status='COMPLETED'. My repo returns exact status counts.
+	// I'll stick to strict status counts.
+	
+	cancelledOrders := statusCounts["CANCELLED"]
+
+	// Calculate Average Order Value
+	avgOrderValue := 0.0
+	if completedOrders > 0 {
+		avgOrderValue = totalRevenue / float64(completedOrders)
+	}
+
+	// Convert Daily Revenue List to Map
+	dailyRevenueMap := make(map[string]float64)
+	for _, stat := range revenueTrend {
+		dailyRevenueMap[stat.Date] = stat.Revenue
+	}
 
 	response := map[string]interface{}{
-		"total_revenue": summary["total_revenue"],
-		"total_orders":  summary["total_orders"],
-		"pending_count": pendingCount,
-		"daily_revenue": revenueTrend,
+		"total_revenue":       totalRevenue,
+		"total_orders":        totalOrders,
+		"pending_orders":      pendingOrders,
+		"completed_orders":    completedOrders,
+		"cancelled_orders":    cancelledOrders,
+		"average_order_value": avgOrderValue,
+		"daily_revenue":       dailyRevenueMap,
 	}
 
 	json.NewEncoder(w).Encode(response)
