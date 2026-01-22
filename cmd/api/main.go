@@ -118,6 +118,7 @@ func main() {
 				// Admin & Cashier only
 				r.Use(handlers.RoleMiddleware(userService, "Admin", "Cashier"))
 				r.Get("/revenue", orderHandler.GetRevenueAnalytics)
+				r.Get("/dashboard", orderHandler.GetDashboardAnalytics)
 			})
 
 			r.Route("/orders", func(r chi.Router) {
