@@ -143,11 +143,13 @@ func (s *OrderService) GetSalesAnalytics() (map[string]interface{}, error) {
 
 	var revenueTrend []repository.DailyRevenueStats
 	// Use local time for generating the last 7 days.
-	now := time.Now()
+	loc, _ := time.LoadLocation("Asia/Manila")
+	now := time.Now().In(loc)
 	for i := 6; i >= 0; i-- {
 		date := now.AddDate(0, 0, -i).Format("2006-01-02")
 
 		if stat, exists := statsMap[date]; exists {
+			stat.Date = date // Normalize format to YYYY-MM-DD
 			revenueTrend = append(revenueTrend, stat)
 		} else {
 			revenueTrend = append(revenueTrend, repository.DailyRevenueStats{
