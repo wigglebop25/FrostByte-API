@@ -134,7 +134,11 @@ func (s *OrderService) GetSalesAnalytics() (map[string]interface{}, error) {
 	statsMap := make(map[string]repository.DailyRevenueStats)
 	for _, stat := range dailyStats {
 		// Ensure date format matches YYYY-MM-DD
-		statsMap[stat.Date] = stat
+		dateKey := stat.Date
+		if len(dateKey) > 10 {
+			dateKey = dateKey[:10]
+		}
+		statsMap[dateKey] = stat
 	}
 
 	var revenueTrend []repository.DailyRevenueStats
