@@ -7,7 +7,6 @@ services:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-password}
       TZ: Asia/Manila
     ports:
-      # Only allow access from the host machine (localhost), not the internet
       - "127.0.0.1:3307:3306"
     volumes:
       - db_data:/var/lib/mysql
@@ -17,9 +16,7 @@ services:
       retries: 10
 
   api:
-    # Use the local build context instead of pulling from Docker Hub
-    # build: .
-    image: wigglebop25/frostbyte-api:latest
+    build: .
     restart: always
     ports:
       - "443:8080"
@@ -36,9 +33,7 @@ services:
       SEED_CUSTOMER_PASSWORD: ${SEED_CUSTOMER_PASSWORD}
       TZ: Asia/Manila
     volumes:
-      # Mount the .env file from the host
       - ./.env:/app/.env
-      # Mount certificates from the host
       - ./server.crt:/app/server.crt
       - ./server.key:/app/server.key
     depends_on:
