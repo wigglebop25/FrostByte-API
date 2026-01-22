@@ -139,7 +139,15 @@ func (s *OrderService) GetSalesAnalytics() (map[string]interface{}, error) {
 			dateKey = dateKey[:10]
 		}
 		statsMap[dateKey] = stat
+		// DEBUG LOG
+		println("DEBUG: DB Date:", stat.Date, " Key:", dateKey, " Rev:", stat.Revenue)
 	}
+	
+	now := time.Now()
+	for i := 6; i >= 0; i-- {
+		date := now.AddDate(0, 0, -i).Format("2006-01-02")
+		println("DEBUG: Loop Date:", date) // DEBUG LOG
+		// ... existing code ...
 
 	var revenueTrend []repository.DailyRevenueStats
 	// Use local time for generating the last 7 days.
