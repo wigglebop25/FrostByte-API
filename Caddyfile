@@ -1,0 +1,3 @@
+frostbyte-api.southeastasia.cloudapp.azure.com {
+	reverse_proxy api:8080
+}
