@@ -23,6 +23,10 @@ func NewSeeder(db *gorm.DB) *Seeder {
 
 // SeedIfEmpty checks if the database is empty and seeds it with initial data
 func (s *Seeder) SeedIfEmpty() error {
+	if s.db == nil {
+		return fmt.Errorf("seeder database connection is nil")
+	}
+
 	// Check if users table is empty (excluding roles which are seeded by database.go)
 	var userCount int64
 	s.db.Model(&domain.User{}).Count(&userCount)
