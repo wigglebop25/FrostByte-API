@@ -22,17 +22,24 @@ services:
     expose:
       - "8080"
     environment:
+      # --- Server Config ---
       SERVER_PORT: 8080
+      TZ: Asia/Manila
+
+      # --- Database Connection ---
       DB_HOST: db
       DB_PORT: 3306
       DB_USER: root
-      DB_PASSWORD: ${DB_PASSWORD:-password} # CHANGE IN PRODUCTION
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
       DB_NAME: ${DB_NAME:-frost_db}
-      JWT_SECRET: ${JWT_SECRET:-change_me_in_production} # CHANGE IN PRODUCTION
+
+      # --- Security Keys ---
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+
+      # --- Initial Seeder Passwords ---
       SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD}
       SEED_CASHIER_PASSWORD: ${SEED_CASHIER_PASSWORD}
       SEED_CUSTOMER_PASSWORD: ${SEED_CUSTOMER_PASSWORD}
-      TZ: Asia/Manila
     volumes:
       - ./.env:/app/.env
       # Certs removed: API runs in HTTP mode, Caddy handles HTTPS
