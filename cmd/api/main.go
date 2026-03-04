@@ -156,7 +156,7 @@ func main() {
 			r.Route("/users", func(r chi.Router) {
 				// Specific routes FIRST
 				r.Get("/me", userHandler.GetMe)
-				
+
 				// Dynamic routes SECOND
 				r.Get("/{id}", userHandler.GetByID)
 
