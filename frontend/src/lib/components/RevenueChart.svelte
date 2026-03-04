@@ -1,0 +1,79 @@
+<script lang="ts">
+    import { onMount } from "svelte";
+    
+    export let data: number[] = [];
+    export let labels: string[] = [];
+    let chartNode: HTMLElement;
+    let chart: any;
+
+    onMount(async () => {
+        const module = await import("apexcharts");
+        const ApexCharts = module.default;
+
+        const options = {
+            chart: {
+                type: "area",
+                height: 350,
+                toolbar: { show: false },
+                background: "transparent",
+                animations: { enabled: true, easing: 'easeinout', speed: 800 }
+            },
+            series: [{ name: "Revenue", data: data }],
+            xaxis: {
+                categories: labels,
+                labels: { style: { colors: "var(--color-text-secondary)", fontWeight: 600, fontSize: '10px' } },
+                axisBorder: { show: false },
+                axisTicks: { show: false }
+            },
+            yaxis: {
+                labels: { 
+                    style: { colors: "var(--color-text-secondary)", fontWeight: 600 },
+                    formatter: (val: number) => `${val.toLocaleString()}`
+                }
+            },
+            grid: {
+                borderColor: "rgba(0,0,0,0.05)",
+                strokeDashArray: 4
+            },
+            theme: { mode: "light" }, // Apex handles themes, we use vars mostly
+            stroke: { curve: "smooth", width: 4, colors: ["var(--color-primary)"] },
+            fill: {
+                type: "gradient",
+                gradient: {
+                    shadeIntensity: 1,
+                    opacityFrom: 0.4,
+                    opacityTo: 0.05,
+                    stops: [0, 90, 100]
+                }
+            },
+            dataLabels: { enabled: false },
+            markers: { size: 5, colors: ["var(--color-primary)"], strokeWidth: 3, strokeColors: "#fff" }
+        };
+
+        chart = new ApexCharts(chartNode, options);
+        chart.render();
+
+        return () => chart.destroy();
+    });
+
+    // Reactive Updates
+    $: if (chart && data && labels) {
+        chart.updateOptions({
+            xaxis: { categories: labels },
+            series: [{ data: data }]
+        });
+    }
+</script>
+
+<div class="p-6 bg-zinc-900 rounded-2xl border border-zinc-800 shadow-xl">
+    <div class="flex items-center justify-between mb-6">
+        <div>
+            <h3 class="text-lg font-semibold text-white">Weekly Revenue</h3>
+            <p class="text-sm text-zinc-400">Live performance metrics</p>
+        </div>
+        <div class="px-3 py-1 rounded-full bg-blue-500/10 text-blue-500 text-xs font-medium">
+            Live Updates
+        </div>
+    </div>
+    <div bind:this={chartNode}></div>
+</div>

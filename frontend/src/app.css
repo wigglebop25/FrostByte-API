@@ -1,0 +1,81 @@
+@import "tailwindcss";
+
+:root {
+  /* --- Functional Colors (Shared) --- */
+  --status-success: #10B981;
+  --status-warning: #F59E0B;
+  --status-info: #3B82F6;
+  --status-error: #EF4444;
+
+  /* --- Light Mode (Default) --- */
+  --color-primary: #E63946;
+  --color-primary-dark: #D32F2F;
+  --color-accent: #9B1C1C;
+  
+  --color-bg-main: #FFF8E1;
+  --color-bg-surface: #FFFFFF;
+  
+  --color-text-primary: #1D3557;
+  --color-text-secondary: #455A64;
+  --color-text-inverse: #F1FAEE;
+
+  /* Glassmorphism - Light */
+  --glass-bg: rgba(255, 255, 255, 0.2);
+  --glass-border: 1px solid rgba(255, 255, 255, 0.27);
+  --glass-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  --glass-blur: blur(20px);
+}
+
+/* --- Dark Mode Overrides --- */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Brand Colors (Adjusted for contrast) */
+    --color-primary: #FF8A80;
+    --color-primary-dark: #E57373;
+    --color-accent: #FFCDD2;
+
+    /* Backgrounds */
+    --color-bg-main: #121212;
+    --color-bg-surface: #1E1E1E;
+
+    /* Text */
+    --color-text-primary: #E6E1E5;
+    --color-text-secondary: #CAC4D0;
+    --color-text-inverse: #1C1B1F;
+
+    /* Glassmorphism - Dark */
+    --glass-bg: rgba(30, 30, 30, 0.6);
+    --glass-border: 1px solid rgba(255, 255, 255, 0.1);
+    --glass-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+  }
+}
+
+body {
+    background-color: var(--color-bg-main);
+    color: var(--color-text-primary);
+    transition: background-color 0.3s ease, color 0.3s ease;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* Global Glass Utility */
+.glass-card {
+  background: var(--glass-bg);
+  border: var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-radius: 16px;
+  transition: transform 0.2s ease, background 0.3s ease;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background-color: var(--color-primary);
+    border-radius: 20px;
+}
