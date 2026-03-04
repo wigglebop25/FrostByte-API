@@ -49,12 +49,12 @@ type User struct {
 }
 
 type Role struct {
-	RoleID      uint      `gorm:"primaryKey;column:role_id" json:"role_id"`
-	Name        string    `gorm:"size:50;not null;unique" json:"name"`
-	Permissions string    `gorm:"type:text" json:"permissions"`
-	Description string    `gorm:"type:text" json:"description"`
-	CreatedAt   JSONTime  `json:"created_at"`
-	UpdatedAt   JSONTime  `json:"updated_at"`
+	RoleID      uint     `gorm:"primaryKey;column:role_id" json:"role_id"`
+	Name        string   `gorm:"size:50;not null;unique" json:"name"`
+	Permissions string   `gorm:"type:text" json:"permissions"`
+	Description string   `gorm:"type:text" json:"description"`
+	CreatedAt   JSONTime `json:"created_at"`
+	UpdatedAt   JSONTime `json:"updated_at"`
 }
 
 type Category struct {
@@ -98,9 +98,9 @@ type OrderProduct struct {
 }
 
 type OrderFilter struct {
-	Status    string
-	Date      string
-	Page      int
-	Limit     int
-	Search    string
+	Status string
+	Date   string
+	Page   int
+	Limit  int
+	Search string
 }

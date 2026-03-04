@@ -1,8 +1,8 @@
 package domain
 
 type RevenueAnalyticsResponse struct {
-	Period    Period    `json:"period"`
-	Summary   Summary   `json:"summary"`
+	Period    Period      `json:"period"`
+	Summary   Summary     `json:"summary"`
 	DailyData []DailyData `json:"daily_data"`
 }
 
