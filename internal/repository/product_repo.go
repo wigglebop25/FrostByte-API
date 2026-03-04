@@ -46,13 +46,13 @@ func (r *ProductRepository) Update(product *domain.Product) error {
 		if err := tx.Model(product).Updates(product).Error; err != nil {
 			return err
 		}
-		
+
 		if product.Categories != nil {
 			if err := tx.Model(product).Association("Categories").Replace(product.Categories); err != nil {
 				return err
 			}
 		}
-		
+
 		return nil
 	})
 }
@@ -62,7 +62,7 @@ func (r *ProductRepository) Delete(id uint) error {
 	if err := r.db.First(&product, id).Error; err != nil {
 		return err
 	}
-	
+
 	// Clear the many-to-many association with categories
 	if err := r.db.Model(&product).Association("Categories").Clear(); err != nil {
 		return err

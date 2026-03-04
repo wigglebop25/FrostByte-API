@@ -56,7 +56,7 @@ func (r *RoleRepository) AddPermission(roleID uint, permission string) error {
 	if err := r.db.First(&role, roleID).Error; err != nil {
 		return err
 	}
-	
+
 	// Check if permission already exists
 	if strings.Contains(role.Permissions, permission) {
 		return nil // Permission already exists, do nothing
@@ -84,13 +84,13 @@ func (r *RoleRepository) AssignRoleToUser(userID, roleID uint) error {
 	// but Append on a struct with just ID should work if the ID exists in DB.
 	// However, GORM might error if it tries to do something invalid.
 	// Let's explicitly check if user exists or use a cleaner association query.
-	
+
 	// The error "WHERE conditions required" often happens when GORM tries to update/delete without keys.
 	// Let's try finding the user first.
 	if err := r.db.First(&user, userID).Error; err != nil {
 		return err
 	}
-	
+
 	// Also ensure role exists to be safe
 	if err := r.db.First(&role, roleID).Error; err != nil {
 		return err
@@ -100,7 +100,7 @@ func (r *RoleRepository) AssignRoleToUser(userID, roleID uint) error {
 	if err := r.db.Model(&user).Association("Roles").Clear(); err != nil {
 		return err
 	}
-	
+
 	// Then assign the new role
 	return r.db.Model(&user).Association("Roles").Append(&role)
 }
