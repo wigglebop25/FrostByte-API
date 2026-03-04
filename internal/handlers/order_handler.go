@@ -100,7 +100,6 @@ func (h *OrderHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 		orders, err = h.service.GetAllOrders(filter)
 	} else {
 		// Customer only sees their own orders
-		// TODO: Apply filtering to GetOrdersByUserID too if needed, for now keep simple as per request
 		orders, err = h.service.GetOrdersByUserID(userID)
 	}
 
@@ -278,16 +277,13 @@ func (h *OrderHandler) GetDashboardAnalytics(w http.ResponseWriter, r *http.Requ
 
 	// Extract counts
 	statusCounts := summary["status_counts"].(map[string]int64)
-	
+
 	totalRevenue := summary["total_revenue"].(float64)
 	totalOrders := summary["total_orders"].(int64)
-	
+
 	pendingOrders := statusCounts["PENDING"]
-	completedOrders := statusCounts["COMPLETED"] // Note: SalesAnalytics might group READY/COMPLETED for revenue, but counts are separate
-	// For "completed_orders" in the context of Avg Order Value, usually implies valid sales. 
-	// The prompt SQL uses status='COMPLETED'. My repo returns exact status counts.
-	// I'll stick to strict status counts.
-	
+	completedOrders := statusCounts["COMPLETED"]
+
 	cancelledOrders := statusCounts["CANCELLED"]
 
 	// Calculate Average Order Value

@@ -131,7 +131,7 @@ func (h *CategoryHandler) AddProduct(w http.ResponseWriter, r *http.Request) {
 
 	// Resolve Product ID by Name if provided
 	if prodID == 0 && req.Product != "" {
-		// We need to inject ProductService or use a helper. 
+		// We need to inject ProductService or use a helper.
 		// For now, I'll assume CategoryService can handle this lookup or I'll add it to CategoryService.
 		prod, err := h.service.GetProductByName(req.Product)
 		if err != nil {

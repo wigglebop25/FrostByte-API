@@ -23,7 +23,7 @@ func (h *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		Username string `json:"username"`
 		Password string `json:"password"`
-		RoleName string `json:"role_name"` 
+		RoleName string `json:"role_name"`
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -127,7 +127,7 @@ func (h *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 		Password string `json:"password"`
 		RoleName string `json:"role_name"`
 	}
-	
+
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -147,7 +147,7 @@ func (h *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	
+
 	// Determine success message based on what changed
 	var changes []string
 	if req.Username != "" {

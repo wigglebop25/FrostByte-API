@@ -101,7 +101,7 @@ func SecurityHeadersMiddleware(next http.Handler) http.Handler {
 		w.Header().Set("X-XSS-Protection", "1; mode=block")
 		// Content Security Policy (Basic restricted)
 		w.Header().Set("Content-Security-Policy", "default-src 'self'")
-		
+
 		next.ServeHTTP(w, r)
 	})
 }
@@ -138,10 +138,10 @@ func AuthMiddleware(authService *service.AuthService) func(http.Handler) http.Ha
 				http.Error(w, "User ID not found in token", http.StatusUnauthorized)
 				return
 			}
-			
+
 			// Extract username and roles (if available)
 			username, _ := claims["username"].(string)
-			
+
 			var roles []string
 			if rolesClaim, ok := claims["roles"].([]interface{}); ok {
 				for _, r := range rolesClaim {
@@ -154,7 +154,7 @@ func AuthMiddleware(authService *service.AuthService) func(http.Handler) http.Ha
 			ctx := context.WithValue(r.Context(), userIDKey, uint(userIDFloat))
 			ctx = context.WithValue(ctx, usernameKey, username)
 			ctx = context.WithValue(ctx, rolesKey, roles)
-			
+
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
