@@ -70,9 +70,9 @@ jobs:
             DB_HOST=db
             DB_PORT=3306
             DB_USER=root
-            DB_PASSWORD=${{ secrets.DB_PASSWORD || 'password' }}
-            DB_NAME=${{ secrets.DB_NAME || 'frost_db' }}
-            JWT_SECRET=${{ secrets.JWT_SECRET || 'default_secret' }}
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            DB_NAME=${{ secrets.DB_NAME }}
+            JWT_SECRET=${{ secrets.JWT_SECRET }}
             # Seeder Passwords
             SEED_ADMIN_PASSWORD=${{ secrets.SEED_ADMIN_PASSWORD }}
             SEED_CASHIER_PASSWORD=${{ secrets.SEED_CASHIER_PASSWORD }}
@@ -93,7 +93,7 @@ jobs:
             # Wait for database to be ready
             echo 'Waiting for database to be ready...'
             for i in {1..30}; do
-              if docker-compose exec -T db mysql -u root -p"${{ secrets.DB_PASSWORD || 'password' }}" -e 'SELECT 1' &> /dev/null; then
+              if docker-compose exec -T db mysql -u root -p"${{ secrets.DB_PASSWORD }}" -e 'SELECT 1' &> /dev/null; then
                 echo 'Database is ready!'
                 break
               fi
