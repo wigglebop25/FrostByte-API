@@ -7,40 +7,40 @@
 ## Option 1: Azure Container Instances (Simple)
 
 1. **Create a Resource Group**
-   ```bash
-   az group create --name FrostByteGroup --location eastus
-   ```
+ ```bash
+ az group create --name FrostByteGroup --location eastus
+ ```
 
 2. **Create Azure Container Registry (ACR)**
-   ```bash
-   az acr create --resource-group FrostByteGroup --name frostbyteregistry --sku Basic --admin-enabled true
-   ```
+ ```bash
+ az acr create --resource-group FrostByteGroup --name frostbyteregistry --sku Basic --admin-enabled true
+ ```
 
 3. **Login to ACR**
-   ```bash
-   az acr login --name frostbyteregistry
-   ```
+ ```bash
+ az acr login --name frostbyteregistry
+ ```
 
 4. **Build and Push Image**
-   ```bash
-   docker build -t frostbyteregistry.azurecr.io/frostbyte-api:v1 .
-   docker push frostbyteregistry.azurecr.io/frostbyte-api:v1
-   ```
+ ```bash
+ docker build -t frostbyteregistry.azurecr.io/frostbyte-api:v1 .
+ docker push frostbyteregistry.azurecr.io/frostbyte-api:v1
+ ```
 
 5. **Deploy to Container Instance**
-   ```bash
-   az container create \
-     --resource-group FrostByteGroup \
-     --name frostbyte-api-container \
-     --image frostbyteregistry.azurecr.io/frostbyte-api:v1 \
-     --dns-name-label frostbyte-api \
-     --ports 8080 \
-     --environment-variables \
-       DB_HOST=your-mysql-host \
-       DB_USER=your-user \
-       DB_PASSWORD=your-password \
-       JWT_SECRET=production_secret
-   ```
+ ```bash
+ az container create \
+ --resource-group FrostByteGroup \
+ --name frostbyte-api-container \
+ --image frostbyteregistry.azurecr.io/frostbyte-api:v1 \
+ --dns-name-label frostbyte-api \
+ --ports 8080 \
+ --environment-variables \
+ DB_HOST=your-mysql-host \
+ DB_USER=your-user \
+ DB_PASSWORD=your-password \
+ JWT_SECRET=your-production-secret
+ ```
 
 ## Option 2: Azure App Service (Production)
 
