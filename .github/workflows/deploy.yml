@@ -45,7 +45,7 @@ jobs:
           ssh -i ~/.ssh/id_rsa ${{ secrets.USERNAME }}@${{ secrets.HOST }} "mkdir -p ~/FrostByte-API"
 
           # 3. Copy Configuration Files
-          scp -i ~/.ssh/id_rsa ./compose.yml ${{ secrets.USERNAME }}@${{ secrets.HOST }}:~/FrostByte-API/
+          scp -i ~/.ssh/id_rsa ./compose.yml ./Caddyfile ${{ secrets.USERNAME }}@${{ secrets.HOST }}:~/FrostByte-API/
 
           # 4. Remote Deployment Script
           ssh -i ~/.ssh/id_rsa ${{ secrets.USERNAME }}@${{ secrets.HOST }} "
@@ -76,11 +76,10 @@ jobs:
             echo 'Pulling latest image...'
             docker-compose pull api
             
-            echo 'Stopping old services...'
-            docker-compose down
-            
-            echo 'Starting new services...'
-            docker-compose up -d --remove-orphans
+            echo 'Updating services (Rolling update)...'
+            # efficient update: only recreates changed containers (api) without stopping db/caddy
+            docker-compose up -d --remove-orphans --no-deps api
+            docker-compose up -d --remove-orphans caddy
             
             # Wait for database to be ready
             echo 'Waiting for database to be ready...'
