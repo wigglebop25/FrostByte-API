@@ -47,11 +47,11 @@ func (s *RoleService) AssignRoleToUserByName(username, roleName string) error {
 	if err != nil {
 		return err
 	}
-	
+
 	role, err := s.repo.FindByName(roleName)
 	if err != nil {
 		return err
 	}
-	
+
 	return s.repo.AssignRoleToUser(user.UserID, role.RoleID)
 }

@@ -76,7 +76,7 @@ func (s *UserService) UpdateUser(user *domain.User, roleName string) error {
 		}
 		user.PasswordHash = string(hashedPassword)
 	}
-	
+
 	if err := s.repo.Update(user); err != nil {
 		return err
 	}

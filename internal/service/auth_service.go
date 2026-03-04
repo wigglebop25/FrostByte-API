@@ -45,7 +45,7 @@ func (s *AuthService) Register(username, password string) (*domain.User, error) 
 	if err := s.repo.Create(user); err != nil {
 		return nil, err
 	}
-	
+
 	_ = s.roleRepo.AssignRoleToUser(user.UserID, roleID)
 
 	return user, nil
