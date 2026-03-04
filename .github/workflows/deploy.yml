@@ -25,6 +25,13 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/frostbyte-api:latest
 
+      - name: Build and Push Frontend Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/frostbyte-frontend:latest
+
   deploy:
     needs: build-and-push
     runs-on: ubuntu-latest
@@ -73,12 +80,14 @@ jobs:
             EOF
 
             # Deploy
-            echo 'Pulling latest image...'
+            echo 'Pulling latest images...'
             docker-compose pull api
+            docker-compose pull frontend
             
             echo 'Updating services (Rolling update)...'
             # efficient update: only recreates changed containers (api) without stopping db/caddy
             docker-compose up -d --remove-orphans --no-deps api
+            docker-compose up -d --remove-orphans --no-deps frontend
             docker-compose up -d --remove-orphans caddy
             
             # Wait for database to be ready
