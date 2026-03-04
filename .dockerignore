@@ -13,3 +13,7 @@ test_api.bat
 reset_db.bat
 run_local.bat
 run_tests.bat
+node_modules
+frontend/node_modules
+.svelte-kit
+frontend/.svelte-kit
