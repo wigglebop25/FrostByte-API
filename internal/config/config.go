@@ -27,7 +27,7 @@ func LoadConfig() *Config {
 		DBUser:     getEnv("DB_USER", "root"),
 		DBPassword: getEnv("DB_PASSWORD", ""),
 		DBName:     getEnv("DB_NAME", "frost_db"),
-		JWTSecret:  getEnv("JWT_SECRET", "default_secret"),
+		JWTSecret:  getEnv("JWT_SECRET", ""),
 	}
 }
 
