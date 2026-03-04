@@ -82,7 +82,7 @@ func (s *Seeder) seedRoles() error {
 		}
 	}
 
-	log.Println("✓ Roles seeded")
+	log.Println("Roles seeded")
 	return nil
 }
 
@@ -102,7 +102,7 @@ func (s *Seeder) seedCategories() error {
 		}
 	}
 
-	log.Println("✓ Categories seeded")
+	log.Println("Categories seeded")
 	return nil
 }
 
@@ -264,7 +264,7 @@ func (s *Seeder) seedProducts() error {
 		}
 	}
 
-	log.Println("✓ Products seeded")
+	log.Println("Products seeded")
 	return nil
 }
 
@@ -326,7 +326,7 @@ func (s *Seeder) seedUsers() error {
 		s.db.Exec("INSERT IGNORE INTO user_roles (user_id, role_id) VALUES (?, ?)", user.UserID, role.RoleID)
 	}
 
-	log.Println("✓ Users seeded")
+	log.Println("Users seeded")
 	return nil
 }
 
@@ -389,6 +389,6 @@ func (s *Seeder) seedHistoricalOrders() error {
 		}
 	}
 
-	log.Println("✓ Historical orders seeded")
+	log.Println("Historical orders seeded")
 	return nil
 }
