@@ -22,7 +22,18 @@
 
     onMount(async () => {
         const token = localStorage.getItem('token');
-        if (token) {
+        const userStr = localStorage.getItem('user');
+        
+        if (token && userStr) {
+            const user = JSON.parse(userStr);
+            const roles = user.roles?.map((r: any) => r.name.toLowerCase()) || [];
+            
+            // If user is a customer, they shouldn't see the dashboard
+            if (roles.includes('customer')) {
+                goto("/orders/create");
+                return;
+            }
+
             const wsUrl = env.PUBLIC_WS_URL || 'ws://localhost:8080/ws';
             ws.connect(wsUrl, token);
             fetchAnalytics();

@@ -11,6 +11,12 @@
     // Initialize auth on first load
     onMount(() => {
         auth.init();
+        
+        // Auth Guard: Redirect to login if no token found and not on login page
+        const token = localStorage.getItem('token');
+        if (!token && !isLoginPage) {
+            goto('/login');
+        }
     });
 
     const allMenuItems = [
@@ -85,12 +91,12 @@
     <div class="flex h-screen bg-main text-text-primary">
         <!-- Sidebar -->
         <aside class="w-64 glass-card rounded-none border-y-0 border-l-0 border-r flex flex-col z-20">
-            <div class="p-6 flex items-center gap-3">
+            <a href="/" class="p-6 flex items-center gap-3 hover:opacity-80 transition-opacity">
                 <div class="w-10 h-10 rounded-full bg-surface shadow-md p-1 flex-shrink-0">
                     <img src="/images/itadaki_logo.png" alt="Logo" class="w-full h-full object-contain" />
                 </div>
                 <div class="text-2xl font-bold tracking-tight text-accent italic">Itadaki</div>
-            </div>
+            </a>
             
             <nav class="flex-1 px-4 space-y-2 mt-6">
                 {#each visibleMenuItems as item}

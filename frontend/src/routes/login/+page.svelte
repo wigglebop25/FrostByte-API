@@ -28,9 +28,15 @@
             console.log("Login Success:", res.data);
 
             if (res.data.token) {
-                // Update the global store - this triggers the UI refresh instantly!
                 auth.login(res.data.token, res.data.user);
-                goto("/");
+                
+                // Smart Redirect based on role
+                const roles = res.data.user.roles?.map((r: any) => r.name.toLowerCase()) || [];
+                if (roles.includes('customer')) {
+                    goto("/orders/create");
+                } else {
+                    goto("/");
+                }
             }
         } catch (e: any) {
             console.error("Login Error Full:", e);
