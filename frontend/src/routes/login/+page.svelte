@@ -22,6 +22,7 @@
         error = "";
         try {
             console.log("Attempting login to:", api.defaults.baseURL);
+            console.log("Full URL:", api.defaults.baseURL + "/auth/login");
             const res = await api.post("/auth/login", { username, password });
             
             console.log("Login Success:", res.data);

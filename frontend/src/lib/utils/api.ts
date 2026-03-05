@@ -2,11 +2,16 @@ import axios from "axios";
 import { env } from "$env/dynamic/public";
 
 const api = axios.create({
-baseURL: env.PUBLIC_API_URL || "http://localhost:8080",
-headers: {
-"Content-Type": "application/json"
-}
+    baseURL: env.PUBLIC_API_URL || "http://localhost:8080",
+    headers: {
+        "Content-Type": "application/json"
+    }
 });
+
+// Fallback: If baseURL is just the domain, append /api/v1
+if (api.defaults.baseURL && !api.defaults.baseURL.includes('/api/v1') && api.defaults.baseURL.includes('azure.com')) {
+    api.defaults.baseURL = api.defaults.baseURL + '/api/v1';
+}
 
 // Interceptor to add JWT token to requests
 if (typeof window !== "undefined") {
