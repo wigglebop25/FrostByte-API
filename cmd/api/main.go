@@ -18,23 +18,18 @@ import (
 )
 
 func main() {
-	// Load Configuration
 	cfg := config.LoadConfig()
 
-	// Initialize Database
 	database.Connect(cfg.DSN())
 
-	// Initialize Repositories
 	userRepo := repository.NewUserRepository(database.DB)
 	productRepo := repository.NewProductRepository(database.DB)
 	categoryRepo := repository.NewCategoryRepository(database.DB)
 	orderRepo := repository.NewOrderRepository(database.DB)
 	roleRepo := repository.NewRoleRepository(database.DB)
 
-	// Initialize Services
 	authService := service.NewAuthService(userRepo, roleRepo, cfg.JWTSecret)
 
-	// Initialize WebSocket Hub
 	hub := websocket.NewHub(authService)
 	go hub.Run()
 
@@ -44,7 +39,6 @@ func main() {
 	roleService := service.NewRoleService(roleRepo, userRepo)
 	userService := service.NewUserService(userRepo, roleRepo)
 
-	// Initialize Handlers
 	authHandler := handlers.NewAuthHandler(authService)
 	productHandler := handlers.NewProductHandler(productService)
 	categoryHandler := handlers.NewCategoryHandler(categoryService)
@@ -52,15 +46,13 @@ func main() {
 	roleHandler := handlers.NewRoleHandler(roleService)
 	userHandler := handlers.NewUserHandler(userService)
 
-	// Initialize Router
 	r := chi.NewRouter()
 
-	// Middleware
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.StripSlashes)
-	r.Use(handlers.SecurityHeadersMiddleware) // Add Security Headers
-	r.Use(handlers.RateLimitMiddleware)       // Add Rate Limiting
+	r.Use(handlers.SecurityHeadersMiddleware)
+	r.Use(handlers.RateLimitMiddleware)
 	r.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{"*"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
@@ -70,28 +62,23 @@ func main() {
 		MaxAge:           300,
 	}))
 
-	// Routes
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("FrostByte API is running!"))
 	})
 
 	r.Route("/api/v1", func(r chi.Router) {
-		// Use JSON middleware for all API routes
 		r.Use(handlers.JSONMiddleware)
 
-		// Public Routes
 		r.Post("/auth/register", authHandler.Register)
 		r.Post("/auth/login", authHandler.Login)
 		r.Post("/auth/refresh", authHandler.Refresh)
 
-		// Protected Routes
 		r.Group(func(r chi.Router) {
 			r.Use(handlers.AuthMiddleware(authService))
 
 			r.Route("/products", func(r chi.Router) {
 				r.Get("/", productHandler.GetAll)
 				r.Get("/{id}", productHandler.GetByID)
-				// Admin only for modifications
 				r.Group(func(r chi.Router) {
 					r.Use(handlers.AdminMiddleware(userService))
 					r.Post("/", productHandler.Create)
@@ -103,7 +90,6 @@ func main() {
 			r.Route("/categories", func(r chi.Router) {
 				r.Get("/", categoryHandler.GetAll)
 				r.Get("/{id}", categoryHandler.GetByID)
-				// Admin only for modifications
 				r.Group(func(r chi.Router) {
 					r.Use(handlers.AdminMiddleware(userService))
 					r.Post("/", categoryHandler.Create)
@@ -115,30 +101,27 @@ func main() {
 			})
 
 			r.Route("/analytics", func(r chi.Router) {
-				// Admin & Cashier only
 				r.Use(handlers.RoleMiddleware(userService, "Admin", "Cashier"))
 				r.Get("/revenue", orderHandler.GetRevenueAnalytics)
 				r.Get("/dashboard", orderHandler.GetDashboardAnalytics)
 			})
 
 			r.Route("/orders", func(r chi.Router) {
-				// Admin & Cashier routes (Manage Orders)
 				r.Group(func(r chi.Router) {
 					r.Use(handlers.RoleMiddleware(userService, "Admin", "Cashier"))
-					r.Put("/{id}/status", orderHandler.UpdateStatus) // Cashiers need to update status
+					r.Put("/{id}/status", orderHandler.UpdateStatus)
 					r.Get("/role/{role}", orderHandler.GetByRole)
 					r.Get("/analytics", orderHandler.GetAnalytics)
 				})
 
-				// Standard authenticated routes (Customers & Staff)
-				r.Get("/", orderHandler.GetAll) // Smart filtering now implemented
+				r.Get("/", orderHandler.GetAll)
 				r.Post("/", orderHandler.Create)
 				r.Get("/{id}", orderHandler.GetByID)
-				r.Get("/user/{username}", orderHandler.GetByUser) // Moved here to allow self-access
+				r.Get("/user/{username}", orderHandler.GetByUser)
 			})
 
 			r.Route("/roles", func(r chi.Router) {
-				r.Use(handlers.AdminMiddleware(userService)) // Apply Admin check
+				r.Use(handlers.AdminMiddleware(userService))
 				r.Get("/", roleHandler.GetAll)
 				r.Post("/create", roleHandler.Create)
 				r.Get("/{id}", roleHandler.GetByID)
@@ -148,19 +131,14 @@ func main() {
 				r.Post("/assign", roleHandler.AssignRole)
 			})
 
-			// Support for /api/v1/user/me
 			r.Route("/user", func(r chi.Router) {
 				r.Get("/me", userHandler.GetMe)
 			})
 
 			r.Route("/users", func(r chi.Router) {
-				// Specific routes FIRST
 				r.Get("/me", userHandler.GetMe)
-
-				// Dynamic routes SECOND
 				r.Get("/{id}", userHandler.GetByID)
 
-				// Admin Only Group
 				r.Group(func(r chi.Router) {
 					r.Use(handlers.AdminMiddleware(userService))
 					r.Post("/", userHandler.Create)
@@ -171,15 +149,11 @@ func main() {
 				})
 			})
 		})
-
-		// WebSocket moved to root level to match docs
 	})
 
-	// WebSocket Endpoint
 	r.Get("/ws", hub.ServeWs)
 
-	log.Printf("Server starting on port %s (HTTPS)", cfg.ServerPort)
-	// Check if certs exist
+	log.Printf("Server starting on port %s", cfg.ServerPort)
 	if _, err := os.Stat("server.crt"); err == nil {
 		if err := http.ListenAndServeTLS(":"+cfg.ServerPort, "server.crt", "server.key", r); err != nil {
 			log.Fatalf("Server failed to start: %v", err)
