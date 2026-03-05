@@ -23,19 +23,22 @@
         const token = localStorage.getItem('token');
         const userStr = localStorage.getItem('user');
         
-        if (token && userStr) {
-            const user = JSON.parse(userStr);
-            const roles = user.roles?.map((r: any) => r.name.toLowerCase()) || [];
-            
-            if (roles.includes('customer')) {
-                goto("/orders/create");
-                return;
-            }
-
-            const wsUrl = env.PUBLIC_WS_URL || 'ws://localhost:8080/ws';
-            ws.connect(wsUrl, token);
-            fetchAnalytics();
+        if (!token || !userStr) {
+            goto("/login");
+            return;
         }
+
+        const user = JSON.parse(userStr);
+        const roles = user.roles?.map((r: any) => r.name.toLowerCase()) || [];
+        
+        if (roles.includes('customer')) {
+            goto("/orders/create");
+            return;
+        }
+
+        const wsUrl = env.PUBLIC_WS_URL || 'ws://localhost:8080/ws';
+        ws.connect(wsUrl, token);
+        fetchAnalytics();
     });
 
     async function fetchAnalytics() {
