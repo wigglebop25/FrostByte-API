@@ -1,6 +1,6 @@
 frostbyte-api.southeastasia.cloudapp.azure.com {
 	# API routes
-	handle /api/* {
+	handle /api/v1/* {
 		reverse_proxy api:8080
 	}
 	
