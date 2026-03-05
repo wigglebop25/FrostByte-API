@@ -4,7 +4,7 @@ This guide is your daily "instruction manual" for building the FrostByte API. It
 
 ---
 
-## 🏁 Session 1: The Skeleton (Setup)
+## Session 1: The Skeleton (Setup)
 **Goal:** Get a basic Go server running.
 
 ### 1. Initialize Project
@@ -51,11 +51,11 @@ internal/websocket/
 3. Adds a simple "Hello World" route: `r.Get("/", ...)`
 4. Starts the server: `http.ListenAndServe(...)`
 
-**✅ Checkpoint:** Run `go run cmd/api/main.go`. Open `http://localhost:8080`. You should see your message.
+** Checkpoint:** Run `go run cmd/api/main.go`. Open `http://localhost:8080`. You should see your message.
 
 ---
 
-## 🗄️ Session 2: The Heart (Database)
+## Session 2: The Heart (Database)
 **Goal:** Connect to MySQL using Docker.
 
 ### 1. Docker Setup
@@ -69,21 +69,21 @@ internal/websocket/
 ### 3. Database Connection
 **File:** `internal/database/database.go`
 *Action:* Implement `Connect(dsn string)`.
-*   Use `gorm.Open` with the MySQL driver.
-*   **Critical:** Add the Auto-Migration logic:
-    ```go
-    DB.AutoMigrate(&domain.User{}, &domain.Role{}, &domain.Product{}, &domain.Category{}, &domain.Order{}, &domain.OrderProduct{})
-    ```
+* Use `gorm.Open` with the MySQL driver.
+* **Critical:** Add the Auto-Migration logic:
+ ```go
+ DB.AutoMigrate(&domain.User{}, &domain.Role{}, &domain.Product{}, &domain.Category{}, &domain.Order{}, &domain.OrderProduct{})
+ ```
 
 ### 4. Wire it Up
 **File:** `cmd/api/main.go`
 *Action:* Add `database.Connect(cfg.DSN())` before starting the server.
 
-**✅ Checkpoint:** Run `docker-compose up --build`. Check logs for "Database connected successfully!".
+** Checkpoint:** Run `docker-compose up --build`. Check logs for "Database connected successfully!".
 
 ---
 
-## 🔐 Session 3: The Gatekeeper (Auth)
+## Session 3: The Gatekeeper (Auth)
 **Goal:** Register users and issue JWTs.
 
 ### 1. Repository
@@ -93,8 +93,8 @@ internal/websocket/
 ### 2. Service
 **File:** `internal/service/auth_service.go`
 *Action:*
-*   `Register`: Hash password (bcrypt), save user.
-*   `Login`: Check password, generate JWT (golang-jwt).
+* `Register`: Hash password (bcrypt), save user.
+* `Login`: Check password, generate JWT (golang-jwt).
 
 ### 3. Handler
 **File:** `internal/handlers/auth_handler.go`
@@ -104,29 +104,29 @@ internal/websocket/
 **File:** `cmd/api/main.go`
 *Action:* Register routes `/api/v1/auth/login` and `/api/v1/auth/register`.
 
-**✅ Checkpoint:** Open **Bruno**. Run "Auth > Register". You should get a 201 Created and a Token.
+** Checkpoint:** Open **Bruno**. Run "Auth > Register". You should get a 201 Created and a Token.
 
 ---
 
-## 📦 Session 4: The Core (Business Logic)
+## Session 4: The Core (Business Logic)
 **Goal:** Manage Products and Orders.
 
 ### 1. Products & Categories
-*   **Repos:** `product_repo.go`, `category_repo.go` (CRUD operations).
-*   **Services:** `product_service.go`, `category_service.go` (Pass-through logic).
-*   **Handlers:** `product_handler.go`, `category_handler.go`.
-*   **Routes:** Register `/products` and `/categories` in `main.go`.
+* **Repos:** `product_repo.go`, `category_repo.go` (CRUD operations).
+* **Services:** `product_service.go`, `category_service.go` (Pass-through logic).
+* **Handlers:** `product_handler.go`, `category_handler.go`.
+* **Routes:** Register `/products` and `/categories` in `main.go`.
 
 ### 2. Orders
-*   **Repo:** `order_repo.go` (Create order + Save OrderProducts transactionally).
-*   **Service:** `order_service.go` (Calculate totals, call Repo).
-*   **Handler:** `order_handler.go` (Parse input, call Service).
+* **Repo:** `order_repo.go` (Create order + Save OrderProducts transactionally).
+* **Service:** `order_service.go` (Calculate totals, call Repo).
+* **Handler:** `order_handler.go` (Parse input, call Service).
 
-**✅ Checkpoint:** Use Bruno to Create a Category, then a Product, then an Order. Check your Database to see the data linked correctly.
+** Checkpoint:** Use Bruno to Create a Category, then a Product, then an Order. Check your Database to see the data linked correctly.
 
 ---
 
-## ⚡ Session 5: The Pulse (WebSockets)
+## Session 5: The Pulse (WebSockets)
 **Goal:** Live updates when orders are created.
 
 ### 1. The Hub
@@ -144,10 +144,10 @@ internal/websocket/
 **File:** `internal/handlers/ws_handler.go`
 *Action:* Add a handler to upgrade HTTP to WS. Register `/ws/orders` in `main.go`.
 
-**✅ Checkpoint:** Open a WS connection in a tool (or browser console). Create an Order via Bruno. You should see the JSON message appear instantly in the WS connection.
+** Checkpoint:** Open a WS connection in a tool (or browser console). Create an Order via Bruno. You should see the JSON message appear instantly in the WS connection.
 
 ---
 
-## 🚀 Final Steps
-1.  **Review `AZURE_DEPLOY.md`** when you are ready to go live.
-2.  **Run `go test ./...`** to verify integrity.
+## Final Steps
+1. **Review `AZURE_DEPLOY.md`** when you are ready to go live.
+2. **Run `go test ./...`** to verify integrity.
