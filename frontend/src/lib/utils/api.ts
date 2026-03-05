@@ -8,7 +8,7 @@ headers: {
 }
 });
 
-// Automatically add JWT token if it exists in localStorage
+// Interceptor to add JWT token to requests
 if (typeof window !== "undefined") {
 api.interceptors.request.use((config) => {
 const token = localStorage.getItem("token");

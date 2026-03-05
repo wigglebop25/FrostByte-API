@@ -13,7 +13,6 @@ function createAuthStore() {
 
     return {
         subscribe,
-        // Initialize from localStorage (run this in onMount or layout)
         init: () => {
             if (typeof localStorage !== 'undefined') {
                 const token = localStorage.getItem('token');

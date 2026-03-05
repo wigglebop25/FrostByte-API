@@ -10,16 +10,15 @@ export interface Product {
     product_image_uri: string;
     description: string;
     price: number;
-    categories?: Category[]; // For reading (GET)
+    categories?: Category[];
 }
 
-// Payload for creating/updating a product
 export interface CreateProductPayload {
     name: string;
     description: string;
     price: number;
     product_image_uri: string;
-    categories: string[]; // For writing (POST/PUT) - Backend expects names
+    categories: string[];
 }
 
 export interface OrderProduct {

@@ -1,12 +1,23 @@
 <script lang="ts">
     import { onMount } from 'svelte';
+    import { goto } from '$app/navigation';
     import { ws } from '$lib/stores/websocket';
     import { env } from '$env/dynamic/public';
     import api from '$lib/utils/api';
     import RevenueChart from '$lib/components/RevenueChart.svelte';
     import { TrendingUp, Users, ShoppingBag, Activity, CheckCircle, Package } from 'lucide-svelte';
 
-    let stats = {
+    interface Stats {
+        total_revenue: number;
+        total_orders: number;
+        pending_orders: number;
+        completed_orders: number;
+        cancelled_orders: number;
+        average_order_value: number;
+        daily_revenue?: Record<string, number>;
+    }
+
+    let stats: Stats = {
         total_revenue: 0,
         total_orders: 0,
         pending_orders: 0,
@@ -47,8 +58,9 @@
             stats = res.data;
             
             if (stats.daily_revenue) {
-                const dates = Object.keys(stats.daily_revenue).sort();
-                revenueData = dates.map(d => stats.daily_revenue[d]);
+                const dailyRevenue = stats.daily_revenue;
+                const dates = Object.keys(dailyRevenue).sort();
+                revenueData = dates.map(d => dailyRevenue[d]);
                 revenueLabels = dates.map(d => {
                     const date = new Date(d);
                     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
