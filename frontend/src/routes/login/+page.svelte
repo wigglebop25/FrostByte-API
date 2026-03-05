@@ -10,7 +10,6 @@
     let error = "";
     let loading = false;
 
-    // If already logged in, skip to dashboard
     onMount(() => {
         auth.init();
         if (localStorage.getItem("token")) {
@@ -30,7 +29,6 @@
             if (res.data.token) {
                 auth.login(res.data.token, res.data.user);
                 
-                // Smart Redirect based on role
                 const roles = res.data.user.roles?.map((r: any) => r.name.toLowerCase()) || [];
                 if (roles.includes('customer')) {
                     goto("/orders/create");
@@ -107,7 +105,7 @@
         </form>
         
         <div class="mt-8 text-center text-sm text-text-secondary opacity-60">
-            &copy; 2026 Itadaki Restaurant System
+            Copyright 2026 Itadaki Restaurant System
         </div>
     </div>
 </div>

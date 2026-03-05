@@ -6,7 +6,6 @@
     import RevenueChart from '$lib/components/RevenueChart.svelte';
     import { TrendingUp, Users, ShoppingBag, Activity, CheckCircle, Package } from 'lucide-svelte';
 
-    // State for dashboard metrics
     let stats = {
         total_revenue: 0,
         total_orders: 0,
@@ -16,7 +15,7 @@
         average_order_value: 0
     };
     
-    let activeUsers = 0; // Derived or static if not in API
+    let activeUsers = 0;
     let revenueData: number[] = [0, 0, 0, 0, 0, 0, 0];
     let revenueLabels: string[] = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -28,7 +27,6 @@
             const user = JSON.parse(userStr);
             const roles = user.roles?.map((r: any) => r.name.toLowerCase()) || [];
             
-            // If user is a customer, they shouldn't see the dashboard
             if (roles.includes('customer')) {
                 goto("/orders/create");
                 return;
@@ -42,35 +40,27 @@
 
     async function fetchAnalytics() {
         try {
-            console.log("Fetching live analytics...");
             const res = await api.get('/analytics/dashboard');
             stats = res.data;
             
-            // Map Daily Revenue to Chart
             if (stats.daily_revenue) {
                 const dates = Object.keys(stats.daily_revenue).sort();
                 revenueData = dates.map(d => stats.daily_revenue[d]);
-                // Format dates for display (e.g., "Jan 25")
                 revenueLabels = dates.map(d => {
                     const date = new Date(d);
                     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
                 });
             }
-            console.log("Analytics updated:", stats);
         } catch (e) {
-            console.error("Failed to load analytics:", e);
+            console.error("Analytics error:", e);
         }
     }
 
-    // React to WebSocket messages
     $: if ($ws.data) {
         handleMessage($ws.data);
     }
 
     function handleMessage(msg: any) {
-        console.log("WS Event Received:", msg);
-        
-        // Refresh everything if an order event occurs
         if (msg.event === 'NEW_ORDER' || msg.event === 'ORDER_UPDATED' || msg.order_id) {
             fetchAnalytics();
         }
@@ -80,7 +70,6 @@
         }
     }
 
-    // Stats Cards Configuration
     $: cards = [
         { label: 'Total Revenue', value: '$' + (stats.total_revenue || 0).toLocaleString(), icon: TrendingUp, color: 'text-emerald-600', bg: 'bg-emerald-100' },
         { label: 'Total Orders', value: (stats.total_orders || 0).toString(), icon: Package, color: 'text-blue-600', bg: 'bg-blue-100' },

@@ -8,11 +8,9 @@
 
     $: isLoginPage = $page.url.pathname === '/login';
 
-    // Initialize auth on first load
     onMount(() => {
         auth.init();
         
-        // Auth Guard: Redirect to login if no token found and not on login page
         const token = localStorage.getItem('token');
         if (!token && !isLoginPage) {
             goto('/login');
@@ -70,7 +68,6 @@
         },
     ];
 
-    // Reactive Menu: Updates automatically when $auth.user changes
     $: roles = $auth.user?.roles?.map((r: any) => r.name) || [];
     
     $: visibleMenuItems = allMenuItems.filter(item => {

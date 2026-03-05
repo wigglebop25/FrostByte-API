@@ -15,7 +15,6 @@
     function getImageUrl(p: Product): string {
         if (p.product_image_uri.startsWith("http")) return p.product_image_uri;
         
-        // Map common names from documentation to local static files
         const nameMap: Record<string, string> = {
             "Pork Gyoza": "pork_gyoza.png",
             "Edamame": "edamame.png",

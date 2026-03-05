@@ -20,7 +20,6 @@ export function createWebSocketStore() {
         tokenRef = token;
 
         try {
-            // Append token to query param for authentication
             const wsUrl = `${url}?token=${token}`;
             console.log("WS: Connecting to", url);
             socket = new WebSocket(wsUrl);
@@ -29,10 +28,8 @@ export function createWebSocketStore() {
                 update(s => ({ ...s, connected: true, error: null }));
                 console.log("WS: Connected");
 
-                // Clear any pending reconnect
                 if (reconnectTimeout) clearTimeout(reconnectTimeout);
 
-                // Keep-alive ping every 30s
                 pingInterval = setInterval(() => {
                     if (socket?.readyState === WebSocket.OPEN) {
                         socket.send(JSON.stringify({ type: 'ping' }));
@@ -43,8 +40,6 @@ export function createWebSocketStore() {
             socket.onmessage = (event) => {
                 try {
                     const message = JSON.parse(event.data);
-                    // Update the store with the latest message
-                    // We use a timestamp to ensure even identical messages trigger a change
                     update(s => ({ ...s, data: { ...message, _ts: Date.now() } }));
                 } catch (e) {
                     console.error("WS: Parse Error", e);
@@ -56,7 +51,6 @@ export function createWebSocketStore() {
                 console.log("WS: Disconnected", e.reason);
                 cleanup();
                 
-                // Auto-reconnect after 5s
                 reconnectTimeout = setTimeout(() => connect(urlRef, tokenRef), 5000);
             };
 

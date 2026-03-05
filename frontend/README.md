@@ -1,42 +1,26 @@
-# sv
+# Itadaki Restaurant Management System - Web Frontend
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+This is the official web client for the Itadaki Restaurant Management System. Built with SvelteKit and TypeScript, it provides a high-performance, real-time interface for administrators, cashiers, and customers.
 
-## Creating a project
+## Key Modules
 
-If you're seeing this, you've probably already done this step. Congrats!
+- **Dashboard**: Real-time analytics and performance metrics using ApexCharts and WebSocket integration.
+- **Order Management**: Comprehensive workflow for tracking, updating, and managing customer orders.
+- **Product & Inventory**: Admin interface for managing menu items, categories, and pricing.
+- **Access Control**: Role-based access control (RBAC) interface for managing users and system permissions.
+- **Settings**: User profile management and system infrastructure monitoring.
 
-```sh
-# create a new project
-npx sv create my-app
-```
+## Technical Architecture
 
-To recreate this project with the same configuration:
+- **Framework**: SvelteKit (Svelte 5)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS with custom glassmorphism design patterns.
+- **State**: Reactive Svelte stores for authentication and real-time data streaming.
+- **Real-time**: Gorilla WebSocket integration for live order synchronization.
 
-```sh
-# recreate this project
-npx sv create --template minimal --types ts --add tailwindcss="plugins:forms" sveltekit-adapter="adapter:node" --install npm frontend
-```
+## Integration
 
-## Developing
+The frontend communicates with the FrostByte Go API. API configurations are managed via environment variables to support seamless deployment across environments.
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
-
-## Building
-
-To create a production version of your app:
-
-```sh
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+---
+Copyright 2026 Itadaki System
