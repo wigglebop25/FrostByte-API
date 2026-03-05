@@ -1,18 +1,27 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import { ws } from "$lib/stores/websocket";
+    import api from "$lib/utils/api";
     import { User, Shield, Globe, Cpu, LogOut, Info, Palette } from "lucide-svelte";
     import { goto } from "$app/navigation";
 
     let user: any = null;
     let roles: string[] = [];
-    let apiVersion = "v1.0.2"; // Example version
+    let apiVersion = "Checking...";
 
-    onMount(() => {
+    onMount(async () => {
         const userStr = localStorage.getItem("user");
         if (userStr) {
             user = JSON.parse(userStr);
             roles = user.roles?.map((r: any) => r.name) || [];
+        }
+
+        try {
+            const res = await api.get('/health');
+            apiVersion = "v" + res.data.version;
+        } catch (e) {
+            console.error("Failed to fetch version", e);
+            apiVersion = "Unknown";
         }
     });
 
