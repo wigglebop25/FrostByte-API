@@ -1,30 +1,63 @@
-# FrostByte API
+# FrostByte Full-Stack System
 
-FrostByte API is a production-ready, high-performance backend built in Go. Designed for security and scalability, it features advanced Role-Based Access Control (RBAC), real-time WebSocket updates, and a hardened security architecture suitable for enterprise deployment.
+FrostByte is a production-ready, high-performance restaurant management system featuring a Go (Chi) Backend, a SvelteKit (TypeScript) Web Frontend, and a secure Caddy Reverse Proxy. Designed for speed and security, it includes real-time WebSocket updates, advanced RBAC, and automated Azure deployment.
 
-## Key Features
+## Live Demo
+* **Web Application**: [https://frostbyte-api.southeastasia.cloudapp.azure.com](https://frostbyte-api.southeastasia.cloudapp.azure.com)
+* **API Version**: v1 (Base URL: /api/v1)
+* **Status**: Deployed & Production-Ready
 
-* **Security First**: HTTPS/TLS, JWT Auth (Argon2), RBAC, Rate Limiting, and Secured Docker Containers.
-* **Real-Time**: Integrated WebSockets for live updates.
-* **Data Integrity**: MySQL 8.0 with GORM (Transactional).
-* **DevOps Ready**: GitHub Actions CI/CD pipeline included.
-* **Mobile-Ready**: 
- * **Server-Side Analytics**: Pre-calculated dashboard stats for performance.
- * **Dual-Token Auth**: Secure Access (15m) & Refresh (7d) token flow.
- * **Optimized Data**: Pagination, Fuzzy Search, and Token Bucket Rate Limiting.
+---
+
+## System Architecture
+
+### 1. Web Frontend (/frontend)
+* **Framework**: SvelteKit (Svelte 5) with TypeScript.
+* **Styling**: Tailwind CSS with a modern Glassmorphism design.
+* **Features**: Responsive Dashboard, Real-time Order Tracking, Admin Management, and Dark Mode support.
+* **State Management**: Reactive Svelte stores for Auth and WebSockets.
+
+### 2. Go Backend (/cmd/api)
+* **Engine**: Go 1.23+ using the Chi router.
+* **Database**: MySQL 8.0 with GORM (Transactional integrity).
+* **Security**: JWT Authentication (Argon2), Role-Based Access Control (Admin/Cashier/Customer), and Rate Limiting.
+* **Real-time**: High-concurrency WebSocket Hub for live order notifications.
+
+### 3. Infrastructure & DevOps
+* **Reverse Proxy**: Caddy handles automatic HTTPS (Let's Encrypt), load balancing, and static asset serving.
+* **Containerization**: Fully Dockerized (Non-root, multi-stage builds).
+* **Cloud**: Hosted on Azure VM (Southeast Asia).
+* **CI/CD**: Automated GitHub Actions pipeline for building and deploying.
+
+---
 
 ## Tech Stack
 
-* **Language**: Go 1.23+
-* **Web Framework**: Chi v5
-* **Database**: MySQL 8.0
-* **Real-time**: Gorilla WebSocket
-* **Deployment**: Docker, Docker Compose, GitHub Actions
+| Layer | Technologies |
+| :--- | :--- |
+| **Frontend** | SvelteKit, TypeScript, Tailwind CSS, Lucide, ApexCharts |
+| **Backend** | Go, Chi, GORM, Gorilla WebSocket |
+| **Database** | MySQL 8.0 |
+| **Proxy/SSL** | Caddy v2 (Auto-HTTPS) |
+| **DevOps** | Docker, GitHub Actions, Azure VM |
 
-## Documentation
+---
 
-* [**Latest Updates (Android Integration)**](ANDROID_BACKEND_UPDATES.md) - **Read this for new API changes.**
-* [Implementation Guide](docs/IMPLEMENTATION_GUIDE.md) - Step-by-step guide on how the API was built.
-* [Azure Deployment Guide](docs/AZURE_DEPLOY.md) - Instructions for deploying to Azure.
-* [Master Plan](docs/MASTER_PLAN.md) - Original project plan and architecture.
-* [Deployment Details](docs/DEPLOYMENT.md) - Additional deployment information.
+## Key Documentation
+
+### Frontend Guides
+* [**Frontend Setup**](frontend/README.md) - How to run the web app locally.
+* [Web Integration Guide](frontend/WEB_INTEGRATION_GUIDE.md) - Svelte & Styling details.
+* [API Communication Guide](API_COMMUNICATION_GUIDE.md) - How the Frontend talks to the API.
+
+### Backend & API
+* [**API Reference**](API_REFERENCE_COMPLETE.md) - Complete list of endpoints and payloads.
+* [WebSocket Guide](WEBSOCKET_GUIDE.md) - Real-time event documentation.
+* [Android Backend Updates](ANDROID_BACKEND_UPDATES.md) - Latest API changes for mobile.
+
+### Deployment & DevOps
+* [Azure Deployment](docs/AZURE_DEPLOY.md) - Instructions for the cloud infrastructure.
+* [Master Plan](docs/MASTER_PLAN.md) - Original project architecture and goals.
+
+---
+Copyright 2026 FrostByte System | [LICENSE](LICENSE)
