@@ -16,9 +16,12 @@ services:
       retries: 10
 
   api:
+    build:
+      context: .
+      dockerfile: Dockerfile
     image: wigglebop25/frostbyte-api:latest
     restart: always
-    # Ports removed: Caddy handles ingress now
+    # ... rest of config
     expose:
       - "8080"
     environment:
@@ -48,6 +51,9 @@ services:
         condition: service_healthy
 
   frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
     image: wigglebop25/frostbyte-frontend:latest
     restart: always
     expose:
