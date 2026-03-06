@@ -79,6 +79,7 @@ jobs:
             SEED_CUSTOMER_PASSWORD=${{ secrets.SEED_CUSTOMER_PASSWORD }}
             EOF
 
+
             # Deploy
             echo 'Pulling latest images...'
             docker-compose pull api
