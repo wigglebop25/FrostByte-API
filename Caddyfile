@@ -1,10 +1,18 @@
 frostbyte-api.southeastasia.cloudapp.azure.com {
-	# API routes
+	# API Gateway: Route all /api requests to the backend service.
 	handle /api/* {
-		reverse_proxy api:8080
-	}
-	handle /api/v1/* {
-		reverse_proxy api:8080
+		# Handler for explicitly versioned requests (v1).
+		@alreadyV1 path /api/v1/*
+		handle @alreadyV1 {
+			reverse_proxy api:8080
+		}
+
+		# Backward Compatibility Layer: Injects /v1 prefix for legacy or unversioned requests.
+		handle {
+			uri strip_prefix /api
+			rewrite * /api/v1{path}
+			reverse_proxy api:8080
+		}
 	}
 	
 	# WebSocket route
