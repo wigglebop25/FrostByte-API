@@ -13,17 +13,22 @@
     };
 
     function getImageUrl(p: Product): string {
-        if (!p.product_image_uri) return "/images/itadaki_logo.png";
+        const azureBase = "https://frostbytedata.blob.core.windows.net/products/";
         
-        // Fallback: If the database is still returning the old local path, 
-        // dynamically rewrite it to the Azure Blob Storage URL.
-        if (p.product_image_uri.startsWith('/images/')) {
-            // Convert 'pork-gyoza.jpg' -> 'pork_gyoza.png'
-            const filename = p.product_image_uri.split('/').pop()?.split('.')[0].replace(/-/g, '_') + '.png';
-            return `https://frostbytedata.blob.core.windows.net/products/${filename}`;
+        // 1. If we have a full URL (already Azure or other external), use it as is.
+        if (p.product_image_uri && p.product_image_uri.startsWith('http')) {
+            return p.product_image_uri;
         }
-        
-        return p.product_image_uri;
+
+        // 2. If it's a local path (like '/images/pork-gyoza.jpg'), convert to Azure URL.
+        if (p.product_image_uri && p.product_image_uri.includes('/')) {
+            const filename = p.product_image_uri.split('/').pop()?.split('.')[0].replace(/-/g, '_') + '.png';
+            return `${azureBase}${filename}`;
+        }
+
+        // 3. Fallback: Construct filename from product name if URI is missing or just a string.
+        const nameToSlug = (p.product_image_uri || p.name).toLowerCase().replace(/[-\s]/g, '_').split('.')[0] + '.png';
+        return `${azureBase}${nameToSlug}`;
     }
 
     function handleImageError(e: Event) {
