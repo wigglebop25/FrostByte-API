@@ -9,8 +9,7 @@ export default defineConfig({
 			'/api': {
 				target: 'https://frostbyte-api.southeastasia.cloudapp.azure.com',
 				changeOrigin: true,
-				secure: false, // Accept self-signed certs if needed
-				rewrite: (path) => path.replace(/^\/api/, '/api/v1')
+				secure: false // Accept self-signed certs if needed
 			},
             '/ws': {
                 target: 'wss://frostbyte-api.southeastasia.cloudapp.azure.com',

@@ -51,8 +51,10 @@
                 markers: { size: 5, colors: ["var(--color-primary)"], strokeWidth: 3, strokeColors: "#fff" }
             };
 
-            chart = new ApexCharts(chartNode, options);
-            chart.render();
+            if (chartNode) {
+                chart = new ApexCharts(chartNode, options);
+                chart.render();
+            }
         })();
 
         return () => {
