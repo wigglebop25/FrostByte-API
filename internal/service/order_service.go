@@ -49,7 +49,10 @@ func (s *OrderService) CreateOrder(userID uint, items []domain.OrderProduct) (*d
 
 	// Broadcast the new order
 	// Target: The User who created it + All Staff (Admin/Cashier)
-	s.hub.Broadcast(order, order.UserID, []string{"Admin", "Cashier"})
+	s.hub.Broadcast(map[string]interface{}{
+		"event": "NEW_ORDER",
+		"data":  order,
+	}, order.UserID, []string{"Admin", "Cashier"})
 
 	return order, nil
 }
