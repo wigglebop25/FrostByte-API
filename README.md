@@ -29,6 +29,7 @@ FrostByte is a production-ready, high-performance restaurant management system f
 
 ### 4. Infrastructure & DevOps
 * **Reverse Proxy**: Caddy handles automatic HTTPS (Let's Encrypt), load balancing, and static asset serving.
+* **Storage**: Integrated with **Azure Blob Storage** for high-speed, off-node image delivery and reduced server I/O load.
 * **Containerization**: Fully Dockerized (Non-root, multi-stage builds).
 * **Cloud**: Hosted on Azure VM (Southeast Asia).
 * **CI/CD**: Automated GitHub Actions pipeline for building and deploying.
@@ -43,6 +44,7 @@ FrostByte is a production-ready, high-performance restaurant management system f
 | **Mobile** | Android SDK, Kotlin, Jetpack Compose, Retrofit |
 | **Backend** | Go, Chi, GORM, Gorilla WebSocket |
 | **Database** | MySQL 8.0 |
+| **Storage** | Azure Blob Storage (LRS) |
 | **Proxy/SSL** | Caddy v2 (Auto-HTTPS) |
 | **DevOps** | Docker, GitHub Actions, Azure VM |
 
