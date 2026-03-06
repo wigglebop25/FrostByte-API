@@ -13,28 +13,12 @@
     };
 
     function getImageUrl(p: Product): string {
-        if (p.product_image_uri.startsWith("http")) return p.product_image_uri;
-        
-        const nameMap: Record<string, string> = {
-            "Pork Gyoza": "pork_gyoza.png",
-            "Edamame": "edamame.png",
-            "Shrimp Tempura": "shrimp_tempura.png",
-            "Maguro Nigiri": "maguro_nigiri.png",
-            "California Roll": "cali_roll.png",
-            "Salmon Sashimi": "salmon_sashimi.png",
-            "Tonkotsu Ramen": "tonkotsu_ramen.png",
-            "Tempura Udon": "tempura_udon.png",
-            "Vegetable Yakisoba": "yakisoba.png",
-            "Gyu-Don": "gyudon.png",
-            "Katsu-Don": "katsudon.png",
-            "Unagi-Don": "unagi_don.png",
-            "Matcha Mochi": "matcha_mochi.png",
-            "Taiyaki": "taiyaki.png",
-            "Black Sesame Ice Cream": "sesame_ice_cream.png"
-        };
+        return p.product_image_uri || "/images/itadaki_logo.png";
+    }
 
-        const localFile = nameMap[p.name];
-        return localFile ? `/products/${localFile}` : (p.product_image_uri || "/products/itadaki_logo.png");
+    function handleImageError(e: Event) {
+        const target = e.currentTarget as HTMLImageElement;
+        target.src = "/images/itadaki_logo.png";
     }
 </script>
 
@@ -44,7 +28,7 @@
             src={getImageUrl(product)} 
             alt={product.name} 
             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-            on:error={(e) => e.currentTarget.src = '/products/itadaki_logo.png'}
+            on:error={handleImageError}
         />
         <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
         <div class="absolute bottom-3 left-3 flex gap-2">
