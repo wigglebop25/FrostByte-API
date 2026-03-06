@@ -27,33 +27,26 @@ func (s *Seeder) SeedIfEmpty() error {
 		return fmt.Errorf("seeder database connection is nil")
 	}
 
-	// Check if users table is empty (excluding roles which are seeded by database.go)
+	// Check if users table is empty
 	var userCount int64
 	s.db.Model(&domain.User{}).Count(&userCount)
 
-	if userCount > 0 {
-		log.Println("Database already has users, skipping seed")
-		return nil
-	}
+	log.Println("Starting database maintenance/seed...")
 
-	log.Println("Starting database seed...")
-
-	// Seed Roles (should already exist from database.go, but ensure they exist)
-	if err := s.seedRoles(); err != nil {
-		log.Printf("Error seeding roles: %v", err)
-		return err
-	}
-
-	// Seed Categories
+	// Always ensure Categories and Products are up to date (enforces Azure Blob URLs)
 	if err := s.seedCategories(); err != nil {
 		log.Printf("Error seeding categories: %v", err)
 		return err
 	}
 
-	// Seed Products
 	if err := s.seedProducts(); err != nil {
 		log.Printf("Error seeding products: %v", err)
 		return err
+	}
+
+	if userCount > 0 {
+		log.Println("Database already has users, skipping user/order seed")
+		return nil
 	}
 
 	// Seed Users
@@ -256,8 +249,27 @@ func (s *Seeder) seedProducts() error {
 	}
 
 	for _, p := range products {
-		if err := s.db.FirstOrCreate(&p.product, domain.Product{Name: p.product.Name}).Error; err != nil {
-			return err
+		// Use a temporary variable to hold the existing product if found
+		var existingProduct domain.Product
+		err := s.db.Where("name = ?", p.product.Name).First(&existingProduct).Error
+		
+		if err != nil {
+			if err == gorm.ErrRecordNotFound {
+				// Create new product if not exists
+				if err := s.db.Create(&p.product).Error; err != nil {
+					return err
+				}
+				existingProduct = p.product
+			} else {
+				return err
+			}
+		} else {
+			// Update existing product with new info (especially image URI)
+			s.db.Model(&existingProduct).Updates(domain.Product{
+				Description:     p.product.Description,
+				Price:           p.product.Price,
+				ProductImageURI: p.product.ProductImageURI,
+			})
 		}
 
 		// Associate with categories
@@ -266,7 +278,7 @@ func (s *Seeder) seedProducts() error {
 			if err := s.db.Where("name = ?", catName).First(&category).Error; err != nil {
 				continue
 			}
-			s.db.Model(&p.product).Association("Categories").Append(&category)
+			s.db.Model(&existingProduct).Association("Categories").Append(&category)
 		}
 	}
 
