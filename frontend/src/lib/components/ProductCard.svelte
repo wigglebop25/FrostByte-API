@@ -13,7 +13,17 @@
     };
 
     function getImageUrl(p: Product): string {
-        return p.product_image_uri || "/images/itadaki_logo.png";
+        if (!p.product_image_uri) return "/images/itadaki_logo.png";
+        
+        // Fallback: If the database is still returning the old local path, 
+        // dynamically rewrite it to the Azure Blob Storage URL.
+        if (p.product_image_uri.startsWith('/images/')) {
+            // Convert 'pork-gyoza.jpg' -> 'pork_gyoza.png'
+            const filename = p.product_image_uri.split('/').pop()?.split('.')[0].replace(/-/g, '_') + '.png';
+            return `https://frostbytedata.blob.core.windows.net/products/${filename}`;
+        }
+        
+        return p.product_image_uri;
     }
 
     function handleImageError(e: Event) {
