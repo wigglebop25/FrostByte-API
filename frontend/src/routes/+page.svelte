@@ -47,8 +47,6 @@
             return;
         }
 
-        const wsUrl = env.PUBLIC_WS_URL || 'ws://localhost:8080/ws';
-        ws.connect(wsUrl, token);
         fetchAnalytics();
     });
 
@@ -115,7 +113,7 @@
     <!-- Stats Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {#each cards as card}
-            <div class="glass-card p-6 hover:shadow-lg transition-all duration-300 bg-surface/40 border-glass-border">
+            <div class="glass-card p-6 hover:shadow-lg transition-all duration-300 border-glass-border">
                 <div class="flex items-center justify-between mb-4">
                     <span class="text-text-secondary text-[10px] font-bold uppercase tracking-widest">{card.label}</span>
                     <div class="p-2 rounded-xl {card.bg} shadow-sm">
@@ -129,7 +127,7 @@
 
     <!-- Charts -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div class="lg:col-span-2 glass-card p-8 bg-surface/40 border-glass-border">
+        <div class="lg:col-span-2 glass-card p-8 border-glass-border">
             <div class="flex items-center justify-between mb-8">
                 <h3 class="text-xl font-bold text-text-primary font-serif">Revenue Performance</h3>
                 <div class="text-xs font-bold text-text-secondary bg-main px-3 py-1 rounded-full border border-glass-border">
@@ -140,7 +138,7 @@
         </div>
 
         <!-- System Health / Quick Stats -->
-        <div class="glass-card p-8 bg-surface/40 border-glass-border flex flex-col">
+        <div class="glass-card p-8 border-glass-border flex flex-col">
             <h3 class="text-xl font-bold text-text-primary mb-8 font-serif">Order Distribution</h3>
             
             <div class="space-y-6 flex-1">

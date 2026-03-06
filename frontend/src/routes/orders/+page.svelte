@@ -31,9 +31,7 @@
             if (filterType === "USER" && filterValue) endpoint = `/orders/user/${filterValue}`;
             else if (filterType === "ROLE" && filterValue) endpoint = `/orders/role/${filterValue}`;
 
-            console.log("Fetching orders from:", endpoint);
             const res = await api.get(endpoint);
-            console.log("Orders received:", res.data);
             orders = res.data;
         } catch (e: any) {
             console.error("Failed to fetch orders:", e);
@@ -44,7 +42,7 @@
     }
 
     async function handleStatusChange(event: Event, order: Order) {
-        const newStatus = (event.target as HTMLSelectElement).value;
+        const newStatus = (event.target as HTMLSelectElement).value as Order['status'];
         if (!newStatus || newStatus === order.status) return;
 
         updatingId = order.order_id;
@@ -180,7 +178,7 @@
     <div class="glass-card overflow-hidden">
         <div class="overflow-x-auto">
             <table class="w-full text-left">
-                <thead class="bg-surface/50 border-b border-glass-border">
+                <thead class="bg-primary/5 border-b border-glass-border">
                     <tr>
                         <th class="px-6 py-4 font-bold text-text-secondary text-sm uppercase tracking-wider">Order ID</th>
                         <th class="px-6 py-4 font-bold text-text-secondary text-sm uppercase tracking-wider">Customer</th>
@@ -190,7 +188,7 @@
                         <th class="px-6 py-4 font-bold text-text-secondary text-sm uppercase tracking-wider text-right">Actions</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-glass-border bg-surface/30">
+                <tbody class="divide-y divide-glass-border">
                     {#if loading}
                         <tr><td colspan="6" class="px-6 py-12 text-center text-text-secondary">Loading...</td></tr>
                     {:else}
@@ -264,10 +262,10 @@
         ></button>
 
         <div 
-            class="glass-card w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] bg-surface relative z-10" 
+            class="glass-card w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] relative z-10" 
             role="document"
         >
-            <div class="p-6 border-b border-glass-border flex justify-between items-start bg-surface/80">
+            <div class="p-6 border-b border-glass-border flex justify-between items-start bg-surface/30 backdrop-blur-md">
                 <div>
                     <h2 class="text-2xl font-bold text-text-primary">Order #{selectedOrder.order_id}</h2>
                     <p class="text-text-secondary text-sm mt-1">Customer: {selectedOrder.user?.username}</p>
@@ -275,11 +273,11 @@
                 <button on:click={closeDetailsModal} class="text-text-secondary hover:text-primary"><X size={24} /></button>
             </div>
             
-            <div class="p-6 overflow-y-auto flex-1 bg-main/30">
+            <div class="p-6 overflow-y-auto flex-1">
                 <div class="space-y-3">
                     {#if selectedOrder.products}
                         {#each selectedOrder.products as item}
-                            <div class="flex justify-between p-4 bg-surface border border-glass-border rounded-xl">
+                            <div class="flex justify-between p-4 bg-surface/40 border border-glass-border rounded-xl">
                                 <span class="font-bold text-text-primary">{item.product?.name} <span class="text-text-secondary font-normal">x{item.quantity}</span></span>
                                 <span class="font-mono text-primary font-bold">${item.line_total.toFixed(2)}</span>
                             </div>
@@ -293,7 +291,7 @@
 
             <!-- Modal Actions (Alternative to Table Actions) -->
             {#if canUpdateStatus && nextStatus[selectedOrder.status.toUpperCase()]?.length > 0}
-                <div class="p-6 bg-surface border-t border-glass-border flex gap-3">
+                <div class="p-6 bg-surface/30 border-t border-glass-border flex gap-3">
                     {#each nextStatus[selectedOrder.status.toUpperCase()] as status}
                         <button 
                             on:click={(e) => handleStatusChange({ target: { value: status } } as any, selectedOrder!)}

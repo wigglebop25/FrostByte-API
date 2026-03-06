@@ -2,11 +2,12 @@
     import api from "$lib/utils/api";
     import { goto } from "$app/navigation";
     import { auth } from "$lib/stores/auth"; // Use the new store
-    import { Lock, User, ArrowRight } from "lucide-svelte";
+    import { Lock, User, ArrowRight, Eye, EyeOff } from "lucide-svelte";
     import { onMount } from "svelte";
 
     let username = "";
     let password = "";
+    let showPassword = false;
     let error = "";
     let loading = false;
 
@@ -84,8 +85,15 @@
                 <label class="text-sm font-bold text-text-primary ml-1" for="password">Password</label>
                 <div class="relative group">
                     <Lock class="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary group-focus-within:text-primary transition-colors" size={20} />
-                    <input bind:value={password} type="password" id="password" required placeholder="********"
-                        class="w-full bg-surface/50 border border-glass-border rounded-xl py-3.5 pl-12 pr-4 text-text-primary placeholder:text-text-secondary/50 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" />
+                    <input bind:value={password} type={showPassword ? 'text' : 'password'} id="password" required placeholder="********"
+                        class="w-full bg-surface/50 border border-glass-border rounded-xl py-3.5 pl-12 pr-12 text-text-primary placeholder:text-text-secondary/50 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" />
+                    <button type="button" on:click={() => showPassword = !showPassword} class="absolute right-4 top-1/2 -translate-y-1/2 text-text-secondary hover:text-primary transition-colors focus:outline-none cursor-pointer">
+                        {#if showPassword}
+                            <EyeOff size={20} />
+                        {:else}
+                            <Eye size={20} />
+                        {/if}
+                    </button>
                 </div>
             </div>
 

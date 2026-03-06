@@ -128,8 +128,8 @@
     </div>
 
     <!-- Right: Cart Summary -->
-    <div class="w-96 glass-card flex flex-col shrink-0 h-full shadow-2xl bg-surface/80 backdrop-blur-xl border-l border-glass-border">
-        <div class="p-6 border-b border-glass-border bg-white/50">
+    <div class="w-96 glass-card flex flex-col shrink-0 h-full shadow-2xl border-l border-glass-border">
+        <div class="p-6 border-b border-glass-border bg-primary/5">
             <h2 class="text-xl font-bold flex items-center gap-2 text-text-primary">
                 <ShoppingCart class="text-primary" />
                 Current Order
@@ -148,18 +148,18 @@
                 </div>
             {:else}
                 {#each cart as item}
-                    <div class="flex items-center gap-3 bg-main/50 p-3 rounded-xl border border-glass-border hover:border-primary/30 transition-colors">
+                    <div class="flex items-center gap-3 bg-primary/5 p-3 rounded-xl border border-glass-border hover:border-primary/30 transition-colors">
                         <img 
                             src={getImageUrl(item)} 
                             alt={item.name} 
-                            class="w-12 h-12 rounded-lg object-cover bg-surface" 
+                            class="w-12 h-12 rounded-lg object-cover bg-surface/50" 
                             on:error={handleImageError}
                         />
                         <div class="flex-1 min-w-0">
                             <h4 class="font-bold truncate text-text-primary text-sm">{item.name}</h4>
                             <p class="text-xs text-primary font-bold">${(item.price * item.quantity).toFixed(2)}</p>
                         </div>
-                        <div class="flex items-center gap-2 bg-surface rounded-lg p-1 border border-glass-border">
+                        <div class="flex items-center gap-2 bg-surface/50 rounded-lg p-1 border border-glass-border">
                             <button on:click={() => updateQuantity(item.product_id, -1)} class="p-1 hover:bg-main rounded text-text-secondary hover:text-primary transition-colors">
                                 <Minus size={14} />
                             </button>
@@ -174,7 +174,7 @@
         </div>
 
         <!-- Footer / Checkout -->
-        <div class="p-6 border-t border-glass-border bg-surface">
+        <div class="p-6 border-t border-glass-border bg-surface/30">
             <div class="flex justify-between items-end mb-6">
                 <span class="text-text-secondary font-medium">Total Amount</span>
                 <span class="text-3xl font-bold text-primary">${cartTotal.toFixed(2)}</span>

@@ -19,11 +19,11 @@
   --color-text-secondary: #455A64;
   --color-text-inverse: #F1FAEE;
 
-  /* Glassmorphism - Light */
-  --glass-bg: rgba(255, 255, 255, 0.2);
-  --glass-border: 1px solid rgba(255, 255, 255, 0.27);
-  --glass-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-  --glass-blur: blur(20px);
+  /* Glassmorphism - Light (Apple-style Liquid) */
+  --glass-bg: rgba(255, 255, 255, 0.65);
+  --glass-border: 1px solid rgba(255, 255, 255, 0.5);
+  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+  --glass-blur: blur(40px);
 }
 
 /* --- Dark Mode Overrides --- */
@@ -35,18 +35,18 @@
     --color-accent: #FFCDD2;
 
     /* Backgrounds */
-    --color-bg-main: #121212;
+    --color-bg-main: #0F0F0F; /* Slightly darker for depth */
     --color-bg-surface: #1E1E1E;
 
-    /* Text */
-    --color-text-primary: #E6E1E5;
-    --color-text-secondary: #CAC4D0;
-    --color-text-inverse: #1C1B1F;
+    /* Text - High Contrast */
+    --color-text-primary: #F5F5F5;
+    --color-text-secondary: #E0E0E0;
+    --color-text-inverse: #121212;
 
-    /* Glassmorphism - Dark */
-    --glass-bg: rgba(30, 30, 30, 0.6);
-    --glass-border: 1px solid rgba(255, 255, 255, 0.1);
-    --glass-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+    /* Glassmorphism - Dark (Liquid) */
+    --glass-bg: rgba(20, 20, 20, 0.5); /* More transparency, dark tint */
+    --glass-border: 1px solid rgba(255, 255, 255, 0.08);
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6);
   }
 }
 
@@ -55,17 +55,18 @@ body {
     color: var(--color-text-primary);
     transition: background-color 0.3s ease, color 0.3s ease;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-image: radial-gradient(circle at 50% 0%, rgba(255,255,255,0.05) 0%, transparent 70%); /* Subtle top light */
 }
 
-/* Global Glass Utility */
+/* Global Glass Utility (Liquid Style) */
 .glass-card {
   background: var(--glass-bg);
   border: var(--glass-border);
-  box-shadow: var(--glass-shadow);
+  box-shadow: var(--glass-shadow), inset 0 0 0 0.5px rgba(255, 255, 255, 0.1); /* Inner rim */
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
-  border-radius: 16px;
-  transition: transform 0.2s ease, background 0.3s ease;
+  border-radius: 20px; /* Smoother corners */
+  transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94), background 0.3s ease;
 }
 
 /* Custom Scrollbar */

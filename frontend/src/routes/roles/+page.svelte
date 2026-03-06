@@ -121,7 +121,7 @@
                     </div>
                     <h3 class="text-xl font-bold text-text-primary mb-2">{role.name}</h3>
                     <p class="text-text-secondary text-sm mb-4">{role.description || "No description."}</p>
-                    <div class="flex items-center gap-2 text-xs font-mono text-primary bg-primary/5 px-2 py-1 rounded border border-primary/10 w-fit"><Lock size={12} /> {(role as any).permissions || "NONE"}</div>
+                    <div class="flex items-center gap-2 text-xs font-mono text-primary bg-primary/5 px-2 py-1 rounded border border-primary/10 w-fit"><Lock size={12} /> {role.permissions || "NONE"}</div>
                 </div>
             {/each}
         </div>

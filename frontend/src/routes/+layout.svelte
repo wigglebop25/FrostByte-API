@@ -5,6 +5,8 @@
     import { goto } from "$app/navigation";
     import { onMount } from "svelte";
     import { auth } from "$lib/stores/auth";
+    import { ws } from "$lib/stores/websocket";
+    import { env } from "$env/dynamic/public";
 
     $: isLoginPage = $page.url.pathname === '/login';
 
@@ -14,6 +16,9 @@
         const token = localStorage.getItem('token');
         if (!token && !isLoginPage) {
             goto('/login');
+        } else if (token) {
+            const wsUrl = env.PUBLIC_WS_URL || 'wss://frostbyte-api.southeastasia.cloudapp.azure.com/ws';
+            ws.connect(wsUrl, token);
         }
     });
 
@@ -123,11 +128,12 @@
 
         <!-- Main Content -->
         <main class="flex-1 overflow-auto p-8 relative scroll-smooth">
-            <!-- Background Orbs for visual depth -->
-            <div class="fixed top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] pointer-events-none -z-10 translate-x-1/3 -translate-y-1/3"></div>
-            <div class="fixed bottom-0 left-64 w-[400px] h-[400px] bg-status-info/5 rounded-full blur-[100px] pointer-events-none -z-10 -translate-x-1/2 translate-y-1/2"></div>
-            
             <slot />
+            
+            <!-- Background Orbs for visual depth (Enhanced for Liquid Glass) -->
+            <div class="fixed top-0 right-0 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[120px] pointer-events-none -z-10 translate-x-1/4 -translate-y-1/4 mix-blend-multiply dark:mix-blend-screen"></div>
+            <div class="fixed bottom-0 left-1/4 w-[500px] h-[500px] bg-status-info/10 rounded-full blur-[100px] pointer-events-none -z-10 translate-y-1/4 mix-blend-multiply dark:mix-blend-screen"></div>
+            <div class="fixed top-1/2 left-1/2 w-[400px] h-[400px] bg-accent/5 rounded-full blur-[80px] pointer-events-none -z-10 -translate-x-1/2 -translate-y-1/2 mix-blend-overlay"></div>
         </main>
     </div>
 {/if}

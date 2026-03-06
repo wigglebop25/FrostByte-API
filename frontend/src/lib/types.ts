@@ -39,6 +39,8 @@ export interface User {
 export interface Role {
     role_id: number;
     name: string;
+    description?: string;
+    permissions?: string;
 }
 
 export interface Order {
@@ -46,7 +48,7 @@ export interface Order {
     user_id: number;
     user?: User;
     total_amount: number;
-    status: 'PENDING' | 'READY' | 'COMPLETED' | 'CANCELLED';
+    status: 'PENDING' | 'ACCEPTED' | 'COOKING' | 'READY' | 'COMPLETED' | 'CANCELLED';
     products?: OrderProduct[];
     created_at: string;
 }
