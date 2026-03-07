@@ -121,6 +121,7 @@
             <button 
                 class="fixed inset-0 bg-black/40 backdrop-blur-sm z-30 lg:hidden"
                 on:click={() => mobileMenuOpen = false}
+                aria-label="Close navigation menu"
             ></button>
         {/if}
 

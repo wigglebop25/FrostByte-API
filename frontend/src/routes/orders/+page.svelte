@@ -293,7 +293,7 @@
                 <div class="p-5 border-t border-[var(--glass-border-subtle)] flex gap-2.5">
                     {#each nextStatus[selectedOrder.status.toUpperCase()] as status}
                         <button 
-                            on:click={(e) => handleStatusChange({ target: { value: status } } as any, selectedOrder)}
+                            on:click={(e) => handleStatusChange({ target: { value: status } } as any, selectedOrder!)}
                             class="flex-1 py-2.5 rounded-xl font-bold text-white text-sm shadow-lg transition-all active:scale-[0.97]
                                    {status === 'CANCELLED' ? 'bg-[var(--status-error)] hover:opacity-90' : 'bg-[var(--color-primary)] hover:opacity-90'}"
                         >
