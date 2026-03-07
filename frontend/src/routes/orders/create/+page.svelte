@@ -10,7 +10,7 @@
     import api from "$lib/utils/api";
     import { goto } from "$app/navigation";
     import type { Product } from "$lib/types";
-    import { Search, ShoppingCart, Minus, Plus, ArrowLeft } from "lucide-svelte";
+    import { ShoppingCart, Minus, Plus, ArrowLeft } from "lucide-svelte";
     import ProductCard from "$lib/components/ProductCard.svelte";
     import { getProductImageUrl, handleImageError } from "$lib/utils/image";
 
@@ -101,13 +101,12 @@
             <a href="/orders" class="p-2.5 hover:bg-[var(--glass-bg)] rounded-xl transition-colors text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] border border-transparent hover:border-[var(--glass-border)]">
                 <ArrowLeft size={20} />
             </a>
-            <div class="relative flex-1 max-w-md">
-                <Search class="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)]" size={16} />
+            <div class="flex-1 max-w-md">
                 <input 
                     bind:value={searchQuery}
                     type="text" 
                     placeholder="Search menu..." 
-                    class="glass-input w-full pl-12 pr-4 text-sm"
+                    class="glass-input w-full px-4 text-sm"
                 />
             </div>
         </div>

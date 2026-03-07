@@ -9,7 +9,7 @@
     import { onMount } from "svelte";
     import api from "$lib/utils/api";
     import type { Role } from "$lib/types";
-    import { Plus, Search, Trash2, Edit, X, Shield, Lock, ShieldCheck } from "lucide-svelte";
+    import { Plus, Trash2, Edit, X, Shield, Lock, ShieldCheck } from "lucide-svelte";
 
     let roles: Role[] = [];
     let loading = true;
@@ -107,9 +107,8 @@
     </div>
 
     <!-- Search -->
-    <div class="relative max-w-md">
-        <Search class="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)]" size={16} />
-        <input bind:value={searchQuery} placeholder="Search roles..." class="glass-input w-full pl-12 pr-4 text-sm" />
+    <div class="max-w-md">
+        <input bind:value={searchQuery} placeholder="Search roles..." class="glass-input w-full px-4 text-sm" />
     </div>
 
     {#if loading}

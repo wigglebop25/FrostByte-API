@@ -9,7 +9,7 @@
     import { onMount } from "svelte";
     import api from "$lib/utils/api";
     import type { User, Role } from "$lib/types";
-    import { Search, Plus, ShieldAlert, Trash2, Edit, X, User as UserIcon, Shield, UsersRound } from "lucide-svelte";
+    import { Plus, ShieldAlert, Trash2, Edit, X, UsersRound } from "lucide-svelte";
 
     let users: User[] = [];
     let roles: Role[] = [];
@@ -143,9 +143,8 @@
     {/if}
 
     <!-- Search -->
-    <div class="relative max-w-md">
-        <Search class="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)]" size={16} />
-        <input bind:value={searchQuery} type="text" placeholder="Search by username or ID..." class="glass-input w-full pl-12 pr-4 text-sm" />
+    <div class="max-w-md">
+        <input bind:value={searchQuery} type="text" placeholder="Search by username or ID..." class="glass-input w-full px-4 text-sm" />
     </div>
 
     {#if loading}
@@ -231,10 +230,7 @@
                 <div class="space-y-3">
                     <div>
                         <label class="block text-sm font-semibold text-[var(--color-text-primary)] mb-1.5" for="username">Username</label>
-                        <div class="relative">
-                            <UserIcon class="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)]" size={16} />
-                            <input bind:value={formData.username} id="username" required class="glass-input w-full pl-12 text-sm" />
-                        </div>
+                        <input bind:value={formData.username} id="username" required class="glass-input w-full text-sm" />
                     </div>
 
                     <div>
@@ -246,14 +242,11 @@
 
                     <div>
                         <label class="block text-sm font-semibold text-[var(--color-text-primary)] mb-1.5" for="role">Assign Role</label>
-                        <div class="relative">
-                            <Shield class="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)]" size={16} />
-                            <select bind:value={formData.role_name} id="role" class="glass-input w-full pl-12 text-sm appearance-none cursor-pointer">
-                                {#each roles as role}
-                                    <option value={role.name}>{role.name}</option>
-                                {/each}
-                            </select>
-                        </div>
+                        <select bind:value={formData.role_name} id="role" class="glass-input w-full text-sm appearance-none cursor-pointer">
+                            {#each roles as role}
+                                <option value={role.name}>{role.name}</option>
+                            {/each}
+                        </select>
                     </div>
                 </div>
 

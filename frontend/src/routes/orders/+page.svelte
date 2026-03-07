@@ -11,7 +11,7 @@
     import api from "$lib/utils/api";
     import type { Order } from "$lib/types";
     import { ws } from "$lib/stores/websocket";
-    import { Search, Filter, Eye, X, Plus, ChevronDown, Check, AlertCircle, RefreshCw } from "lucide-svelte";
+    import { Eye, X, Plus, ChevronDown, Check, AlertCircle, RefreshCw } from "lucide-svelte";
     import { goto } from "$app/navigation";
 
     let orders: Order[] = [];
@@ -157,13 +157,11 @@
 
     <!-- Search & Status Filters -->
     <div class="flex flex-col sm:flex-row gap-3">
-        <div class="flex-1 relative">
-            <Search class="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)]" size={16} />
-            <input bind:value={searchQuery} placeholder="Search by ID or customer..." class="glass-input w-full pl-12 pr-4 text-sm" />
+        <div class="flex-1">
+            <input bind:value={searchQuery} placeholder="Search by ID or customer..." class="glass-input w-full px-4 text-sm" />
         </div>
-        <div class="relative">
-            <Filter size={15} class="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)] pointer-events-none" />
-            <select bind:value={statusFilter} class="glass-input pl-12 pr-8 text-sm font-semibold appearance-none cursor-pointer min-w-[150px]">
+        <div>
+            <select bind:value={statusFilter} class="glass-input px-4 pr-8 text-sm font-semibold appearance-none cursor-pointer min-w-[150px]">
                 <option value="ALL">All Status</option>
                 <option value="PENDING">Pending</option>
                 <option value="ACCEPTED">Accepted</option>

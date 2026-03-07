@@ -8,7 +8,7 @@
     import { onMount } from "svelte";
     import api from "$lib/utils/api";
     import type { Product, CreateProductPayload } from "$lib/types";
-    import { Plus, Search, X, Tag, Grid3x3 } from "lucide-svelte";
+    import { Plus, X, Grid3x3 } from "lucide-svelte";
     import ProductCard from "$lib/components/ProductCard.svelte";
 
     let products: Product[] = [];
@@ -140,13 +140,12 @@
     </div>
 
     <!-- Search -->
-    <div class="relative max-w-md">
-        <Search class="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)]" size={16} />
+    <div class="max-w-md">
         <input 
             bind:value={searchQuery}
             type="text" 
             placeholder="Search products..." 
-            class="glass-input w-full pl-12 pr-4 text-sm"
+            class="glass-input w-full px-4 text-sm"
         />
     </div>
 
@@ -219,10 +218,7 @@
 
                     <div class="col-span-1 sm:col-span-2">
                         <label class="block text-sm font-semibold text-[var(--color-text-primary)] mb-1.5" for="cats">Categories</label>
-                        <div class="relative">
-                            <Tag class="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)]" size={15} />
-                            <input bind:value={categoryInput} id="cats" placeholder="Sushi, Drinks (comma separated)" class="glass-input w-full pl-12 text-sm" />
-                        </div>
+                        <input bind:value={categoryInput} id="cats" placeholder="Sushi, Drinks (comma separated)" class="glass-input w-full text-sm" />
                     </div>
                 </div>
 
