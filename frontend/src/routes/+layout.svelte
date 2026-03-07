@@ -39,10 +39,11 @@
 
     /**
      * Reactively establish or reconnect the WebSocket when the auth token changes.
-     * This handles initial login, page reload, and transparent token refresh scenarios.
+     * Resets the retry counter on new tokens (e.g., after login or token refresh).
      */
     $: if ($auth.token && !isLoginPage) {
         const wsUrl = env.PUBLIC_WS_URL || 'wss://frostbyte-api.southeastasia.cloudapp.azure.com/ws';
+        ws.resetRetries();
         ws.connect(wsUrl, $auth.token);
     }
 
