@@ -30,9 +30,17 @@
         if (!token && !isLoginPage) {
             goto('/login');
         }
+
+        /** Listen for automatic token refresh events to update the auth store reactively. */
+        window.addEventListener('token-refreshed', ((e: CustomEvent) => {
+            auth.updateToken(e.detail);
+        }) as EventListener);
     });
 
-    /** Reactively establish WebSocket connection when authentication state changes. */
+    /**
+     * Reactively establish or reconnect the WebSocket when the auth token changes.
+     * This handles initial login, page reload, and transparent token refresh scenarios.
+     */
     $: if ($auth.token && !isLoginPage) {
         const wsUrl = env.PUBLIC_WS_URL || 'wss://frostbyte-api.southeastasia.cloudapp.azure.com/ws';
         ws.connect(wsUrl, $auth.token);
@@ -111,12 +119,12 @@
 {#if isLoginPage}
     <slot />
 {:else}
-    <div class="flex h-screen bg-[var(--color-bg-main)] text-[var(--color-text-primary)] overflow-hidden">
+    <div class="flex h-dvh bg-[var(--color-bg-main)] text-[var(--color-text-primary)] overflow-hidden">
         <!-- Decorative Animated Mesh Background -->
         <div class="mesh-bg">
-            <div class="mesh-orb w-[500px] h-[500px] top-[-5%] right-[-5%]" style="background: var(--mesh-1);"></div>
-            <div class="mesh-orb w-[400px] h-[400px] bottom-[10%] left-[5%]" style="background: var(--mesh-2); animation-delay: -10s;"></div>
-            <div class="mesh-orb w-[300px] h-[300px] top-[40%] left-[40%]" style="background: var(--mesh-3); animation-delay: -15s;"></div>
+            <div class="mesh-orb w-[250px] sm:w-[350px] lg:w-[500px] h-[250px] sm:h-[350px] lg:h-[500px] top-[-5%] right-[-5%]" style="background: var(--mesh-1);"></div>
+            <div class="mesh-orb w-[200px] sm:w-[300px] lg:w-[400px] h-[200px] sm:h-[300px] lg:h-[400px] bottom-[10%] left-[5%]" style="background: var(--mesh-2); animation-delay: -10s;"></div>
+            <div class="mesh-orb w-[150px] sm:w-[200px] lg:w-[300px] h-[150px] sm:h-[200px] lg:h-[300px] top-[40%] left-[40%]" style="background: var(--mesh-3); animation-delay: -15s;"></div>
         </div>
 
         <!-- Mobile Menu Overlay -->
@@ -226,7 +234,7 @@
             </header>
 
             <!-- Page Content -->
-            <main class="flex-1 overflow-auto p-6 lg:p-8">
+            <main class="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:p-8">
                 <slot />
             </main>
         </div>

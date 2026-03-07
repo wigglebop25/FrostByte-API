@@ -108,8 +108,8 @@
 
     <!-- Search -->
     <div class="relative max-w-md">
-        <Search class="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)]" size={16} />
-        <input bind:value={searchQuery} placeholder="Search roles..." class="glass-input w-full pl-10 pr-4 text-sm" />
+        <Search class="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)]" size={16} />
+        <input bind:value={searchQuery} placeholder="Search roles..." class="glass-input w-full pl-12 pr-4 text-sm" />
     </div>
 
     {#if loading}

@@ -141,12 +141,12 @@
 
     <!-- Search -->
     <div class="relative max-w-md">
-        <Search class="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)]" size={16} />
+        <Search class="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)]" size={16} />
         <input 
             bind:value={searchQuery}
             type="text" 
             placeholder="Search products..." 
-            class="glass-input w-full pl-10 pr-4 text-sm"
+            class="glass-input w-full pl-12 pr-4 text-sm"
         />
     </div>
 
@@ -196,32 +196,32 @@
                     </div>
                 {/if}
 
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="col-span-2">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div class="col-span-1 sm:col-span-2">
                         <label class="block text-sm font-semibold text-[var(--color-text-primary)] mb-1.5" for="name">Product Name</label>
                         <input bind:value={formData.name} id="name" required class="glass-input w-full text-sm" />
                     </div>
 
-                    <div class="col-span-2 sm:col-span-1">
+                    <div class="col-span-1">
                         <label class="block text-sm font-semibold text-[var(--color-text-primary)] mb-1.5" for="price">Price ($)</label>
                         <input bind:value={formData.price} id="price" type="number" step="0.01" required class="glass-input w-full text-sm" />
                     </div>
 
-                    <div class="col-span-2">
+                    <div class="col-span-1 sm:col-span-2">
                         <label class="block text-sm font-semibold text-[var(--color-text-primary)] mb-1.5" for="desc">Description</label>
                         <textarea bind:value={formData.description} id="desc" rows="3" class="glass-input w-full text-sm"></textarea>
                     </div>
 
-                    <div class="col-span-2">
+                    <div class="col-span-1 sm:col-span-2">
                         <label class="block text-sm font-semibold text-[var(--color-text-primary)] mb-1.5" for="img">Image URL</label>
                         <input bind:value={formData.product_image_uri} id="img" placeholder="https://example.com/image.png" class="glass-input w-full text-sm" />
                     </div>
 
-                    <div class="col-span-2">
+                    <div class="col-span-1 sm:col-span-2">
                         <label class="block text-sm font-semibold text-[var(--color-text-primary)] mb-1.5" for="cats">Categories</label>
                         <div class="relative">
-                            <Tag class="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)]" size={15} />
-                            <input bind:value={categoryInput} id="cats" placeholder="Sushi, Drinks (comma separated)" class="glass-input w-full pl-10 text-sm" />
+                            <Tag class="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)]" size={15} />
+                            <input bind:value={categoryInput} id="cats" placeholder="Sushi, Drinks (comma separated)" class="glass-input w-full pl-12 text-sm" />
                         </div>
                     </div>
                 </div>

@@ -144,8 +144,8 @@
 
     <!-- Search -->
     <div class="relative max-w-md">
-        <Search class="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)]" size={16} />
-        <input bind:value={searchQuery} type="text" placeholder="Search by username or ID..." class="glass-input w-full pl-10 pr-4 text-sm" />
+        <Search class="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)]" size={16} />
+        <input bind:value={searchQuery} type="text" placeholder="Search by username or ID..." class="glass-input w-full pl-12 pr-4 text-sm" />
     </div>
 
     {#if loading}
@@ -232,8 +232,8 @@
                     <div>
                         <label class="block text-sm font-semibold text-[var(--color-text-primary)] mb-1.5" for="username">Username</label>
                         <div class="relative">
-                            <UserIcon class="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)]" size={16} />
-                            <input bind:value={formData.username} id="username" required class="glass-input w-full pl-10 text-sm" />
+                            <UserIcon class="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)]" size={16} />
+                            <input bind:value={formData.username} id="username" required class="glass-input w-full pl-12 text-sm" />
                         </div>
                     </div>
 
@@ -247,8 +247,8 @@
                     <div>
                         <label class="block text-sm font-semibold text-[var(--color-text-primary)] mb-1.5" for="role">Assign Role</label>
                         <div class="relative">
-                            <Shield class="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)]" size={16} />
-                            <select bind:value={formData.role_name} id="role" class="glass-input w-full pl-10 text-sm appearance-none cursor-pointer">
+                            <Shield class="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)]" size={16} />
+                            <select bind:value={formData.role_name} id="role" class="glass-input w-full pl-12 text-sm appearance-none cursor-pointer">
                                 {#each roles as role}
                                     <option value={role.name}>{role.name}</option>
                                 {/each}

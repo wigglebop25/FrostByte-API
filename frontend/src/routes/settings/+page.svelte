@@ -55,7 +55,7 @@
         <p class="text-[var(--color-text-secondary)] text-sm mt-0.5">Manage your profile and system preferences.</p>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+    <div class="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 gap-6">
         <!-- Settings Navigation Tabs -->
         <div class="space-y-1">
             {#each tabs as tab}
@@ -73,7 +73,7 @@
         </div>
 
         <!-- Tab Content Panels -->
-        <div class="md:col-span-3 space-y-5">
+        <div class="sm:col-span-2 md:col-span-3 space-y-5">
             <!-- Account Profile Panel -->
             {#if activeTab === 'profile'}
                 <div class="glass-card p-6">

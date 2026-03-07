@@ -158,12 +158,12 @@
     <!-- Search & Status Filters -->
     <div class="flex flex-col sm:flex-row gap-3">
         <div class="flex-1 relative">
-            <Search class="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)]" size={16} />
-            <input bind:value={searchQuery} placeholder="Search by ID or customer..." class="glass-input w-full pl-10 pr-4 text-sm" />
+            <Search class="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)]" size={16} />
+            <input bind:value={searchQuery} placeholder="Search by ID or customer..." class="glass-input w-full pl-12 pr-4 text-sm" />
         </div>
         <div class="relative">
-            <Filter size={15} class="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)] pointer-events-none" />
-            <select bind:value={statusFilter} class="glass-input pl-10 pr-8 text-sm font-semibold appearance-none cursor-pointer min-w-[150px]">
+            <Filter size={15} class="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)] pointer-events-none" />
+            <select bind:value={statusFilter} class="glass-input pl-12 pr-8 text-sm font-semibold appearance-none cursor-pointer min-w-[150px]">
                 <option value="ALL">All Status</option>
                 <option value="PENDING">Pending</option>
                 <option value="ACCEPTED">Accepted</option>
@@ -181,12 +181,12 @@
             <table class="w-full text-left">
                 <thead>
                     <tr class="border-b border-[var(--glass-border-subtle)]">
-                        <th class="px-5 py-3.5 font-semibold text-[var(--color-text-secondary)] text-xs uppercase tracking-wider">Order</th>
-                        <th class="px-5 py-3.5 font-semibold text-[var(--color-text-secondary)] text-xs uppercase tracking-wider">Customer</th>
-                        <th class="px-5 py-3.5 font-semibold text-[var(--color-text-secondary)] text-xs uppercase tracking-wider hidden md:table-cell">Date</th>
-                        <th class="px-5 py-3.5 font-semibold text-[var(--color-text-secondary)] text-xs uppercase tracking-wider">Total</th>
-                        <th class="px-5 py-3.5 font-semibold text-[var(--color-text-secondary)] text-xs uppercase tracking-wider">Status</th>
-                        <th class="px-5 py-3.5 font-semibold text-[var(--color-text-secondary)] text-xs uppercase tracking-wider text-right">Actions</th>
+                        <th class="px-3 sm:px-5 py-3 sm:py-3.5 font-semibold text-[var(--color-text-secondary)] text-xs uppercase tracking-wider">Order</th>
+                        <th class="px-3 sm:px-5 py-3 sm:py-3.5 font-semibold text-[var(--color-text-secondary)] text-xs uppercase tracking-wider hidden sm:table-cell">Customer</th>
+                        <th class="px-3 sm:px-5 py-3 sm:py-3.5 font-semibold text-[var(--color-text-secondary)] text-xs uppercase tracking-wider hidden md:table-cell">Date</th>
+                        <th class="px-3 sm:px-5 py-3 sm:py-3.5 font-semibold text-[var(--color-text-secondary)] text-xs uppercase tracking-wider">Total</th>
+                        <th class="px-3 sm:px-5 py-3 sm:py-3.5 font-semibold text-[var(--color-text-secondary)] text-xs uppercase tracking-wider">Status</th>
+                        <th class="px-3 sm:px-5 py-3 sm:py-3.5 font-semibold text-[var(--color-text-secondary)] text-xs uppercase tracking-wider text-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-[var(--glass-border-subtle)]">
@@ -202,15 +202,15 @@
                                 tabindex="0"
                                 on:keydown={(e) => e.key === 'Enter' && openOrderDetails(order.order_id)}
                             >
-                                <td class="px-5 py-3.5 font-bold text-[var(--color-text-primary)] text-sm">#{order.order_id}</td>
-                                <td class="px-5 py-3.5 text-[var(--color-text-primary)] text-sm font-medium">{order.user?.username}</td>
-                                <td class="px-5 py-3.5 text-[var(--color-text-secondary)] text-xs hidden md:table-cell">{order.created_at}</td>
-                                <td class="px-5 py-3.5 font-mono font-bold text-[var(--color-text-primary)] text-sm">${order.total_amount.toFixed(2)}</td>
-                                <td class="px-5 py-3.5">
+                                <td class="px-3 sm:px-5 py-3 sm:py-3.5 font-bold text-[var(--color-text-primary)] text-sm">#{order.order_id}</td>
+                                <td class="px-3 sm:px-5 py-3 sm:py-3.5 text-[var(--color-text-primary)] text-sm font-medium hidden sm:table-cell truncate max-w-[120px]">{order.user?.username}</td>
+                                <td class="px-3 sm:px-5 py-3 sm:py-3.5 text-[var(--color-text-secondary)] text-xs hidden md:table-cell">{order.created_at}</td>
+                                <td class="px-3 sm:px-5 py-3 sm:py-3.5 font-mono font-bold text-[var(--color-text-primary)] text-sm">${order.total_amount.toFixed(2)}</td>
+                                <td class="px-3 sm:px-5 py-3 sm:py-3.5">
                                     {#if canUpdateStatus && nextStatus[order.status.toUpperCase()]?.length > 0}
                                         <div class="relative inline-block">
                                             <select 
-                                                class="appearance-none pl-3 pr-7 py-1.5 rounded-lg text-xs font-bold border cursor-pointer outline-none transition-all disabled:opacity-50 {getStatusColor(order.status)}"
+                                                class="appearance-none pl-2 sm:pl-3 pr-6 sm:pr-7 py-1.5 rounded-lg text-xs font-bold border cursor-pointer outline-none transition-all disabled:opacity-50 {getStatusColor(order.status)}"
                                                 value={order.status.toUpperCase()}
                                                 on:change={(e) => handleStatusChange(e, order)}
                                                 disabled={updatingId === order.order_id}
@@ -221,15 +221,15 @@
                                                     <option value={next} class="text-[var(--color-text-primary)] bg-[var(--color-bg-surface)]">{next}</option>
                                                 {/each}
                                             </select>
-                                            <ChevronDown size={11} class="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none opacity-50" />
+                                            <ChevronDown size={11} class="absolute right-1.5 sm:right-2 top-1/2 -translate-y-1/2 pointer-events-none opacity-50" />
                                         </div>
                                     {:else}
-                                        <span class="px-3 py-1.5 rounded-lg text-xs font-bold border {getStatusColor(order.status)}">
+                                        <span class="px-2 sm:px-3 py-1.5 rounded-lg text-xs font-bold border {getStatusColor(order.status)}">
                                             {order.status}
                                         </span>
                                     {/if}
                                 </td>
-                                <td class="px-5 py-3.5 text-right">
+                                <td class="px-3 sm:px-5 py-3 sm:py-3.5 text-right">
                                     <button 
                                         on:click|stopPropagation={() => openOrderDetails(order.order_id)} 
                                         class="p-2 text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors rounded-lg hover:bg-[var(--glass-bg)]"

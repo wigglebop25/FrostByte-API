@@ -35,7 +35,7 @@
             const res = await api.post("/auth/login", { username, password });
             
             if (res.data.token) {
-                auth.login(res.data.token, res.data.user);
+                auth.login(res.data.token, res.data.user, res.data.refresh_token);
                 
                 const roles = res.data.user.roles?.map((r: any) => r.name.toLowerCase()) || [];
                 if (roles.includes('customer')) {
@@ -57,12 +57,12 @@
     }
 </script>
 
-<div class="min-h-screen flex items-center justify-center p-4 bg-[var(--color-bg-main)] relative overflow-hidden">
+<div class="min-h-dvh flex items-center justify-center p-4 bg-[var(--color-bg-main)] relative overflow-hidden">
     <!-- Decorative Animated Mesh Background -->
     <div class="mesh-bg">
-        <div class="mesh-orb w-[600px] h-[600px] top-[-15%] right-[-10%]" style="background: var(--mesh-1);"></div>
-        <div class="mesh-orb w-[500px] h-[500px] bottom-[-10%] left-[-5%]" style="background: var(--mesh-2); animation-delay: -8s;"></div>
-        <div class="mesh-orb w-[350px] h-[350px] top-[30%] left-[20%]" style="background: var(--mesh-3); animation-delay: -15s;"></div>
+        <div class="mesh-orb w-[300px] sm:w-[450px] lg:w-[600px] h-[300px] sm:h-[450px] lg:h-[600px] top-[-15%] right-[-10%]" style="background: var(--mesh-1);"></div>
+        <div class="mesh-orb w-[250px] sm:w-[400px] lg:w-[500px] h-[250px] sm:h-[400px] lg:h-[500px] bottom-[-10%] left-[-5%]" style="background: var(--mesh-2); animation-delay: -8s;"></div>
+        <div class="mesh-orb w-[200px] sm:w-[280px] lg:w-[350px] h-[200px] sm:h-[280px] lg:h-[350px] top-[30%] left-[20%]" style="background: var(--mesh-3); animation-delay: -15s;"></div>
     </div>
 
     <!-- Theme Toggle -->
@@ -71,16 +71,16 @@
     </div>
 
     <!-- Authentication Card -->
-    <div class="w-full max-w-md glass-card p-10 relative z-10 shadow-xl">
+    <div class="w-full max-w-md glass-card p-6 sm:p-10 relative z-10 shadow-xl">
         <!-- Branding Section -->
-        <div class="text-center mb-10">
-            <div class="flex justify-center mb-6">
-                <div class="relative w-20 h-20 rounded-3xl bg-[var(--color-bg-surface)] p-2 shadow-lg">
+        <div class="text-center mb-6 sm:mb-10">
+            <div class="flex justify-center mb-4 sm:mb-6">
+                <div class="relative w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-[var(--color-bg-surface)] p-2 shadow-lg">
                     <img src="/images/itadaki_logo.png" alt="Itadaki Logo" class="w-full h-full object-contain rounded-2xl" />
                 </div>
             </div>
             
-            <h1 class="text-3xl font-extrabold text-[var(--color-text-primary)] mb-2 tracking-tight">Welcome Back</h1>
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-[var(--color-text-primary)] mb-2 tracking-tight">Welcome Back</h1>
             <p class="text-[var(--color-text-secondary)] text-sm">Sign in to manage your restaurant</p>
         </div>
 
