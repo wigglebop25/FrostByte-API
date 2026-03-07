@@ -136,9 +136,9 @@
     });
 </script>
 
-<div class="space-y-3">
+<div class="h-[calc(100dvh-7rem)] sm:h-[calc(100dvh-8rem)] lg:h-[calc(100dvh-9rem)] flex flex-col gap-3">
     <!-- Page Header & Actions -->
-    <div class="flex flex-col sm:flex-row gap-3 justify-between items-start sm:items-center">
+    <div class="flex flex-col sm:flex-row gap-3 justify-between items-start sm:items-center shrink-0">
         <div>
             <h1 class="text-xl font-extrabold tracking-tight text-[var(--color-text-primary)]">Orders</h1>
             <p class="text-[var(--color-text-secondary)] text-xs mt-0.5">Manage and track customer orders in real-time.</p>
@@ -158,7 +158,7 @@
     </div>
 
     <!-- Search & Status Filters -->
-    <div class="flex flex-col sm:flex-row gap-2">
+    <div class="flex flex-col sm:flex-row gap-2 shrink-0">
         <div class="flex-1">
             <input bind:value={searchQuery} placeholder="Search by ID or customer..." class="glass-input w-full px-4 py-2 text-sm" />
         </div>
@@ -175,11 +175,11 @@
         </div>
     </div>
 
-    <!-- Orders Data Table -->
-    <div class="glass-card overflow-hidden">
-        <div class="overflow-x-auto">
+    <!-- Orders Data Table — scrollable inside card -->
+    <div class="glass-card flex-1 min-h-0 flex flex-col overflow-hidden mb-2">
+        <div class="overflow-y-auto flex-1">
             <table class="w-full text-left">
-                <thead>
+                <thead class="sticky top-0 z-10 bg-[var(--color-bg-surface)]/90 backdrop-blur-sm">
                     <tr class="border-b border-[var(--glass-border-subtle)]">
                         <th class="px-3 sm:px-4 py-2 font-semibold text-[var(--color-text-secondary)] text-[11px] uppercase tracking-wider">Order</th>
                         <th class="px-3 sm:px-4 py-2 font-semibold text-[var(--color-text-secondary)] text-[11px] uppercase tracking-wider hidden sm:table-cell">Customer</th>
