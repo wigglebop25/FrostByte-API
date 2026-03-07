@@ -29,11 +29,14 @@
         const token = localStorage.getItem('token');
         if (!token && !isLoginPage) {
             goto('/login');
-        } else if (token) {
-            const wsUrl = env.PUBLIC_WS_URL || 'wss://frostbyte-api.southeastasia.cloudapp.azure.com/ws';
-            ws.connect(wsUrl, token);
         }
     });
+
+    /** Reactively establish WebSocket connection when authentication state changes. */
+    $: if ($auth.token && !isLoginPage) {
+        const wsUrl = env.PUBLIC_WS_URL || 'wss://frostbyte-api.southeastasia.cloudapp.azure.com/ws';
+        ws.connect(wsUrl, $auth.token);
+    }
 
     const allMenuItems = [
         { 
