@@ -2,6 +2,7 @@ import type { Config } from 'tailwindcss';
 import forms from '@tailwindcss/forms';
 
 export default {
+	darkMode: 'class',
 	content: ['./src/**/*.{html,js,svelte,ts}'],
 
 	theme: {
@@ -24,10 +25,18 @@ export default {
 					warning: 'var(--status-warning)',
 					info: 'var(--status-info)',
 					error: 'var(--status-error)'
+				},
+				glass: {
+					border: 'var(--glass-border)',
+					bg: 'var(--glass-bg)'
 				}
 			},
-			backgroundImage: {
-				'glass': 'var(--glass-bg)'
+			borderRadius: {
+				'2xl': '20px',
+				'3xl': '24px'
+			},
+			backdropBlur: {
+				'glass': '40px'
 			}
 		}
 	},
