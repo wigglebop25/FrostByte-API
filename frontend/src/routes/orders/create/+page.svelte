@@ -1,10 +1,18 @@
 <script lang="ts">
+    /**
+     * Customer Order Creation Page
+     *
+     * Provides a product browsing interface with cart management for
+     * placing new orders. Restricted to the Customer role. Submits
+     * orders to the /orders API endpoint.
+     */
     import { onMount } from "svelte";
     import api from "$lib/utils/api";
     import { goto } from "$app/navigation";
     import type { Product } from "$lib/types";
     import { Search, ShoppingCart, Minus, Plus, ArrowLeft } from "lucide-svelte";
     import ProductCard from "$lib/components/ProductCard.svelte";
+    import { getProductImageUrl, handleImageError } from "$lib/utils/image";
 
     let products: Product[] = [];
     let loading = true;
@@ -15,7 +23,7 @@
     let cart: CartItem[] = [];
 
     onMount(async () => {
-        // Access Control: Only Customers can create orders
+        /** Enforces Customer-only access; redirects other roles to dashboard */
         const userStr = localStorage.getItem("user");
         if (userStr) {
             const user = JSON.parse(userStr);
@@ -81,44 +89,38 @@
         }
     }
 
-    function getImageUrl(p: Product): string {
-        return p.product_image_uri || "/images/itadaki_logo.png";
-    }
-
-    function handleImageError(e: Event) {
-        const target = e.currentTarget as HTMLImageElement;
-        target.src = "/images/itadaki_logo.png";
-    }
-
     $: filteredProducts = products.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()));
     $: cartTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 </script>
 
-<div class="h-[calc(100vh-2rem)] flex gap-6 overflow-hidden">
-    <!-- Left: Product Grid -->
-    <div class="flex-1 flex flex-col min-w-0">
+<div class="h-[calc(100vh-2rem)] flex flex-col lg:flex-row gap-5 overflow-hidden">
+    <!-- Product Browsing Section -->
+    <div class="flex-1 flex flex-col min-w-0 min-h-0">
         <!-- Header -->
-        <div class="flex items-center gap-4 mb-6">
-            <a href="/orders" class="p-3 hover:bg-surface rounded-xl transition-colors text-text-secondary hover:text-primary border border-transparent hover:border-glass-border">
-                <ArrowLeft size={24} />
+        <div class="flex items-center gap-3 mb-5">
+            <a href="/orders" class="p-2.5 hover:bg-[var(--glass-bg)] rounded-xl transition-colors text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] border border-transparent hover:border-[var(--glass-border)]">
+                <ArrowLeft size={20} />
             </a>
             <div class="relative flex-1 max-w-md">
-                <Search class="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" size={18} />
+                <Search class="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)]" size={16} />
                 <input 
                     bind:value={searchQuery}
                     type="text" 
                     placeholder="Search menu..." 
-                    class="w-full bg-surface/50 border border-glass-border rounded-xl py-3 pl-10 pr-4 text-text-primary focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all shadow-sm"
+                    class="glass-input w-full pl-10 pr-4 text-sm"
                 />
             </div>
         </div>
 
-        <!-- Grid -->
-        <div class="flex-1 overflow-y-auto pr-2">
+        <!-- Product Grid -->
+        <div class="flex-1 overflow-y-auto pr-2 scrollbar-thin">
             {#if loading}
-                <div class="text-center py-12 text-text-secondary">Loading menu...</div>
+                <div class="text-center py-16 text-[var(--color-text-secondary)] text-sm">
+                    <div class="w-8 h-8 border-2 border-[var(--color-primary)]/30 border-t-[var(--color-primary)] rounded-full animate-spin mx-auto mb-3"></div>
+                    Loading menu...
+                </div>
             {:else}
-                <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6 pb-20">
+                <div class="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 pb-6 lg:pb-20">
                     {#each filteredProducts as product}
                         <ProductCard product={product} onAdd={addToCart} />
                     {/each}
@@ -127,45 +129,45 @@
         </div>
     </div>
 
-    <!-- Right: Cart Summary -->
-    <div class="w-96 glass-card flex flex-col shrink-0 h-full shadow-2xl border-l border-glass-border">
-        <div class="p-6 border-b border-glass-border bg-primary/5">
-            <h2 class="text-xl font-bold flex items-center gap-2 text-text-primary">
-                <ShoppingCart class="text-primary" />
+    <!-- Cart Summary & Checkout Panel -->
+    <div class="w-full lg:w-80 xl:w-96 glass-card-solid flex flex-col shrink-0 max-h-[50vh] lg:max-h-none lg:h-full shadow-2xl">
+        <div class="p-5 border-b border-[var(--glass-border-subtle)] bg-[var(--color-primary)]/5">
+            <h2 class="text-lg font-bold flex items-center gap-2 text-[var(--color-text-primary)]">
+                <ShoppingCart class="text-[var(--color-primary)]" size={20} />
                 Current Order
             </h2>
-            <p class="text-sm text-text-secondary mt-1 font-medium">
+            <p class="text-xs text-[var(--color-text-secondary)] mt-1 font-semibold">
                 {cart.reduce((a, b) => a + b.quantity, 0)} items selected
             </p>
         </div>
 
         <!-- Cart Items -->
-        <div class="flex-1 overflow-y-auto p-4 space-y-3">
+        <div class="flex-1 overflow-y-auto p-4 space-y-2.5 scrollbar-thin">
             {#if cart.length === 0}
-                <div class="h-full flex flex-col items-center justify-center text-text-secondary space-y-4 opacity-50">
-                    <ShoppingCart size={48} />
-                    <p class="font-medium">Cart is empty</p>
+                <div class="h-full flex flex-col items-center justify-center text-[var(--color-text-secondary)] space-y-3 opacity-40 py-8">
+                    <ShoppingCart size={40} />
+                    <p class="font-semibold text-sm">Cart is empty</p>
                 </div>
             {:else}
                 {#each cart as item}
-                    <div class="flex items-center gap-3 bg-primary/5 p-3 rounded-xl border border-glass-border hover:border-primary/30 transition-colors">
+                    <div class="flex items-center gap-3 bg-[var(--color-primary)]/5 p-3 rounded-xl border border-[var(--glass-border-subtle)] hover:border-[var(--color-primary)]/30 transition-all duration-200">
                         <img 
-                            src={getImageUrl(item)} 
+                            src={getProductImageUrl(item)} 
                             alt={item.name} 
-                            class="w-12 h-12 rounded-lg object-cover bg-surface/50" 
+                            class="w-11 h-11 rounded-lg object-cover bg-[var(--color-bg-surface)]" 
                             on:error={handleImageError}
                         />
                         <div class="flex-1 min-w-0">
-                            <h4 class="font-bold truncate text-text-primary text-sm">{item.name}</h4>
-                            <p class="text-xs text-primary font-bold">${(item.price * item.quantity).toFixed(2)}</p>
+                            <h4 class="font-bold truncate text-[var(--color-text-primary)] text-sm">{item.name}</h4>
+                            <p class="text-xs text-[var(--color-primary)] font-bold">${(item.price * item.quantity).toFixed(2)}</p>
                         </div>
-                        <div class="flex items-center gap-2 bg-surface/50 rounded-lg p-1 border border-glass-border">
-                            <button on:click={() => updateQuantity(item.product_id, -1)} class="p-1 hover:bg-main rounded text-text-secondary hover:text-primary transition-colors">
-                                <Minus size={14} />
+                        <div class="flex items-center gap-1.5 bg-[var(--glass-bg)] rounded-lg p-1 border border-[var(--glass-border)]">
+                            <button on:click={() => updateQuantity(item.product_id, -1)} class="p-1 hover:bg-[var(--color-bg-main)] rounded text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors">
+                                <Minus size={13} />
                             </button>
-                            <span class="w-5 text-center text-sm font-bold text-text-primary">{item.quantity}</span>
-                            <button on:click={() => updateQuantity(item.product_id, 1)} class="p-1 hover:bg-main rounded text-text-secondary hover:text-primary transition-colors">
-                                <Plus size={14} />
+                            <span class="w-5 text-center text-xs font-bold text-[var(--color-text-primary)]">{item.quantity}</span>
+                            <button on:click={() => updateQuantity(item.product_id, 1)} class="p-1 hover:bg-[var(--color-bg-main)] rounded text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors">
+                                <Plus size={13} />
                             </button>
                         </div>
                     </div>
@@ -173,19 +175,19 @@
             {/if}
         </div>
 
-        <!-- Footer / Checkout -->
-        <div class="p-6 border-t border-glass-border bg-surface/30">
-            <div class="flex justify-between items-end mb-6">
-                <span class="text-text-secondary font-medium">Total Amount</span>
-                <span class="text-3xl font-bold text-primary">${cartTotal.toFixed(2)}</span>
+        <!-- Order Total & Submit Action -->
+        <div class="p-5 border-t border-[var(--glass-border-subtle)]">
+            <div class="flex justify-between items-end mb-4">
+                <span class="text-[var(--color-text-secondary)] font-semibold text-sm">Total</span>
+                <span class="text-2xl font-extrabold text-[var(--color-primary)]">${cartTotal.toFixed(2)}</span>
             </div>
             <button 
                 on:click={placeOrder}
                 disabled={cart.length === 0 || submitting}
-                class="w-full bg-primary hover:bg-primary-dark text-text-inverse font-bold py-4 rounded-xl transition-all shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 active:scale-95"
+                class="w-full glass-button py-3.5 text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
                 {#if submitting}
-                    <div class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    <div class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                     Processing...
                 {:else}
                     Confirm Order

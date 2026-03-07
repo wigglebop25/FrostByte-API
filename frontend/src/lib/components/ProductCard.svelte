@@ -1,6 +1,13 @@
 <script lang="ts">
+    /**
+     * Product Display Card Component
+     *
+     * Renders a menu product with image, price badge, category pills,
+     * and an add-to-cart action. Used across catalog and order pages.
+     */
     import type { Product } from "$lib/types";
-    import { ShoppingCart, Tag } from "lucide-svelte";
+    import { ShoppingCart } from "lucide-svelte";
+    import { getProductImageUrl, handleImageError } from "$lib/utils/image";
     
     export let product: Product;
     export let onAdd: (p: Product) => void = () => {};
@@ -11,67 +18,48 @@
             currency: 'USD'
         }).format(price);
     };
-
-    function getImageUrl(p: Product): string {
-        const azureBase = "https://frostbytedata.blob.core.windows.net/products/";
-        
-        // 1. If we have a full URL (already Azure or other external), use it as is.
-        if (p.product_image_uri && p.product_image_uri.startsWith('http')) {
-            return p.product_image_uri;
-        }
-
-        // 2. If it's a local path (like '/images/pork-gyoza.jpg'), convert to Azure URL.
-        if (p.product_image_uri && p.product_image_uri.includes('/')) {
-            const filename = p.product_image_uri.split('/').pop()?.split('.')[0].replace(/-/g, '_') + '.png';
-            return `${azureBase}${filename}`;
-        }
-
-        // 3. Fallback: Construct filename from product name if URI is missing or just a string.
-        const nameToSlug = (p.product_image_uri || p.name).toLowerCase().replace(/[-\s]/g, '_').split('.')[0] + '.png';
-        return `${azureBase}${nameToSlug}`;
-    }
-
-    function handleImageError(e: Event) {
-        const target = e.currentTarget as HTMLImageElement;
-        target.src = "/images/itadaki_logo.png";
-    }
 </script>
 
-<div class="glass-card group h-full flex flex-col overflow-hidden hover:scale-[1.02] transition-all duration-300">
-    <div class="relative aspect-video overflow-hidden bg-surface/50">
+<div class="glass-card group h-full flex flex-col overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+    <!-- Product Image & Overlay Badges -->
+    <div class="relative aspect-[4/3] overflow-hidden bg-[var(--color-bg-surface)]">
         <img 
-            src={getImageUrl(product)} 
+            src={getProductImageUrl(product)} 
             alt={product.name} 
-            class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             on:error={handleImageError}
         />
-        <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
-        <div class="absolute bottom-3 left-3 flex gap-2">
-            {#if product.categories}
-                {#each product.categories.slice(0, 1) as cat}
-                    <span class="px-2 py-1 bg-white/20 backdrop-blur-md border border-white/30 rounded text-[10px] font-bold text-white uppercase tracking-wider">
+        <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
+        
+        <!-- Price badge -->
+        <div class="absolute top-3 right-3 px-3 py-1.5 rounded-xl bg-white/90 dark:bg-black/70 backdrop-blur-md text-sm font-bold text-[var(--color-primary)] shadow-lg">
+            {formatPrice(product.price)}
+        </div>
+
+        <!-- Category pills -->
+        {#if product.categories && product.categories.length > 0}
+            <div class="absolute bottom-3 left-3 flex gap-1.5">
+                {#each product.categories.slice(0, 2) as cat}
+                    <span class="px-2.5 py-1 bg-white/20 backdrop-blur-md border border-white/30 rounded-lg text-[10px] font-bold text-white uppercase tracking-wider">
                         {typeof cat === 'string' ? cat : cat.name}
                     </span>
                 {/each}
-            {/if}
-        </div>
+            </div>
+        {/if}
     </div>
 
-    <div class="p-5 flex flex-col flex-1">
-        <div class="flex justify-between items-start mb-2">
-            <h3 class="font-bold text-lg text-text-primary leading-tight line-clamp-1">{product.name}</h3>
-            <span class="text-primary font-bold">{formatPrice(product.price)}</span>
-        </div>
-        
-        <p class="text-text-secondary text-sm line-clamp-2 mb-6 flex-1 italic">
+    <!-- Product Details & Add-to-Cart Action -->
+    <div class="p-4 flex flex-col flex-1">
+        <h3 class="font-bold text-base text-[var(--color-text-primary)] leading-tight line-clamp-1 mb-1">{product.name}</h3>
+        <p class="text-[var(--color-text-secondary)] text-sm line-clamp-2 mb-4 flex-1 opacity-80">
             {product.description}
         </p>
         
         <button 
-            on:click={() => onAdd(product)}
-            class="w-full py-3 bg-primary hover:bg-primary-dark text-text-inverse rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-primary/20 active:scale-95"
+            on:click|stopPropagation={() => onAdd(product)}
+            class="w-full py-2.5 bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-[var(--color-text-inverse)] rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg active:scale-[0.97] text-sm"
         >
-            <ShoppingCart size={18} />
+            <ShoppingCart size={16} />
             <span>Add to Order</span>
         </button>
     </div>

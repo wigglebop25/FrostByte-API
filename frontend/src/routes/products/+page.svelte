@@ -1,24 +1,27 @@
 <script lang="ts">
+    /**
+     * Product Catalog Management Page
+     *
+     * Provides CRUD operations for restaurant menu products. Restricted
+     * to Admin role. Supports product image URLs and category assignment.
+     */
     import { onMount } from "svelte";
     import api from "$lib/utils/api";
     import type { Product, CreateProductPayload } from "$lib/types";
-    import { Plus, Search, X, Tag } from "lucide-svelte";
+    import { Plus, Search, X, Tag, Grid3x3 } from "lucide-svelte";
     import ProductCard from "$lib/components/ProductCard.svelte";
 
     let products: Product[] = [];
     let loading = true;
     let searchQuery = "";
     
-    // RBAC
     let isAdmin = false;
     
-    // Modal State
     let showModal = false;
     let isEditing = false;
     let modalError = "";
     let submitting = false;
 
-    // Form State
     let formData: CreateProductPayload = {
         name: "",
         description: "",
@@ -42,7 +45,6 @@
     }
 
     onMount(() => {
-        // Check Role
         const userStr = localStorage.getItem("user");
         if (userStr) {
             const user = JSON.parse(userStr);
@@ -63,7 +65,6 @@
     }
 
     function handleCardClick(product: Product) {
-        // Only Admins can edit
         if (!isAdmin) return;
         
         isEditing = true;
@@ -123,50 +124,52 @@
     );
 </script>
 
-<div class="space-y-6">
+<div class="space-y-5">
     <!-- Header -->
-    <div class="flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
+    <div class="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
         <div>
-            <h1 class="text-3xl font-bold tracking-tight text-accent font-serif">Products</h1>
-            <p class="text-text-secondary mt-1">Manage your menu items and inventory.</p>
+            <h1 class="text-2xl font-extrabold tracking-tight text-[var(--color-text-primary)]">Products</h1>
+            <p class="text-[var(--color-text-secondary)] text-sm mt-0.5">Manage your menu items and inventory.</p>
         </div>
         {#if isAdmin}
-            <button on:click={openAddModal} class="flex items-center gap-2 bg-primary hover:bg-primary-dark px-4 py-2 rounded-xl font-bold transition-all text-text-inverse shadow-lg shadow-primary/20 active:scale-95">
-                <Plus size={18} />
-                <span>Add Product</span>
+            <button on:click={openAddModal} class="glass-button flex items-center gap-2 text-sm">
+                <Plus size={16} />
+                Add Product
             </button>
         {/if}
     </div>
 
-    <!-- Filters -->
-    <div class="glass-card p-4">
-        <div class="relative max-w-md">
-            <Search class="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" size={18} />
-            <input 
-                bind:value={searchQuery}
-                type="text" 
-                placeholder="Search products..." 
-                class="w-full bg-surface/50 border border-glass-border rounded-xl py-2.5 pl-10 pr-4 text-text-primary focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
-            />
-        </div>
+    <!-- Search -->
+    <div class="relative max-w-md">
+        <Search class="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)]" size={16} />
+        <input 
+            bind:value={searchQuery}
+            type="text" 
+            placeholder="Search products..." 
+            class="glass-input w-full pl-10 pr-4 text-sm"
+        />
     </div>
 
     <!-- Product Grid -->
     {#if loading}
-        <div class="text-center py-12 text-text-secondary">Loading products...</div>
+        <div class="text-center py-16 text-[var(--color-text-secondary)] text-sm">
+            <div class="w-8 h-8 border-2 border-[var(--color-primary)]/30 border-t-[var(--color-primary)] rounded-full animate-spin mx-auto mb-3"></div>
+            Loading products...
+        </div>
     {:else if filteredProducts.length === 0}
-        <div class="text-center py-12 text-text-secondary">No products found.</div>
+        <div class="text-center py-16 text-[var(--color-text-secondary)]">
+            <Grid3x3 size={40} class="mx-auto mb-3 opacity-30" />
+            <p class="text-sm">No products found.</p>
+        </div>
     {:else}
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             {#each filteredProducts as product}
-                <!-- Card is only clickable for Admins -->
                 <button 
                     type="button"
                     class="h-full w-full text-left {isAdmin ? 'cursor-pointer' : 'cursor-default'}" 
                     on:click={() => handleCardClick(product)}
                     disabled={!isAdmin}
                 >
-                    <!-- We use the same card, but pass a no-op for the button if needed, or hide actions -->
                     <ProductCard product={product} onAdd={() => isAdmin ? handleCardClick(product) : null} />
                 </button>
             {/each}
@@ -174,61 +177,62 @@
     {/if}
 </div>
 
-<!-- Add/Edit Modal (Only rendered if showModal is true, which is guarded by isAdmin) -->
+<!-- Product Form Modal — Create / Edit Operations -->
 {#if showModal}
-    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm transition-all">
-        <div class="glass-card w-full max-w-lg shadow-2xl overflow-hidden bg-surface relative">
-            <div class="p-6 border-b border-glass-border flex justify-between items-center bg-surface/80">
-                <h2 class="text-xl font-bold text-text-primary">{isEditing ? 'Edit Product' : 'Add New Product'}</h2>
-                <button on:click={closeModal} class="text-text-secondary hover:text-primary transition-colors">
-                    <X size={24} />
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-md">
+        <button type="button" class="absolute inset-0 w-full h-full cursor-default focus:outline-none" on:click={closeModal} aria-label="Close modal"></button>
+        <div class="glass-card-solid w-full max-w-lg shadow-2xl overflow-hidden relative z-10">
+            <div class="p-5 border-b border-[var(--glass-border-subtle)] flex justify-between items-center">
+                <h2 class="text-lg font-bold text-[var(--color-text-primary)]">{isEditing ? 'Edit Product' : 'Add New Product'}</h2>
+                <button on:click={closeModal} class="p-2 text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] rounded-xl hover:bg-[var(--glass-bg)] transition-colors">
+                    <X size={20} />
                 </button>
             </div>
             
-            <form on:submit|preventDefault={handleSubmit} class="p-6 space-y-4 bg-surface/50">
+            <form on:submit|preventDefault={handleSubmit} class="p-5 space-y-4">
                 {#if modalError}
-                    <div class="p-3 bg-status-error/10 border border-status-error/20 text-status-error rounded-lg text-sm font-medium">
+                    <div class="p-3 bg-[var(--status-error)]/10 border border-[var(--status-error)]/20 text-[var(--status-error)] rounded-xl text-sm font-medium">
                         {modalError}
                     </div>
                 {/if}
 
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-2 gap-3">
                     <div class="col-span-2">
-                        <label class="block text-sm font-bold text-text-primary mb-1" for="name">Product Name</label>
-                        <input bind:value={formData.name} id="name" required class="w-full bg-main border border-glass-border rounded-xl px-4 py-2 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors" />
+                        <label class="block text-sm font-semibold text-[var(--color-text-primary)] mb-1.5" for="name">Product Name</label>
+                        <input bind:value={formData.name} id="name" required class="glass-input w-full text-sm" />
                     </div>
 
                     <div class="col-span-2 sm:col-span-1">
-                        <label class="block text-sm font-bold text-text-primary mb-1" for="price">Price ($)</label>
-                        <input bind:value={formData.price} id="price" type="number" step="0.01" required class="w-full bg-main border border-glass-border rounded-xl px-4 py-2 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors" />
+                        <label class="block text-sm font-semibold text-[var(--color-text-primary)] mb-1.5" for="price">Price ($)</label>
+                        <input bind:value={formData.price} id="price" type="number" step="0.01" required class="glass-input w-full text-sm" />
                     </div>
 
                     <div class="col-span-2">
-                        <label class="block text-sm font-bold text-text-primary mb-1" for="desc">Description</label>
-                        <textarea bind:value={formData.description} id="desc" rows="3" class="w-full bg-main border border-glass-border rounded-xl px-4 py-2 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors"></textarea>
+                        <label class="block text-sm font-semibold text-[var(--color-text-primary)] mb-1.5" for="desc">Description</label>
+                        <textarea bind:value={formData.description} id="desc" rows="3" class="glass-input w-full text-sm"></textarea>
                     </div>
 
                     <div class="col-span-2">
-                        <label class="block text-sm font-bold text-text-primary mb-1" for="img">Image URL</label>
-                        <input bind:value={formData.product_image_uri} id="img" placeholder="https://example.com/image.png" class="w-full bg-main border border-glass-border rounded-xl px-4 py-2 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors" />
+                        <label class="block text-sm font-semibold text-[var(--color-text-primary)] mb-1.5" for="img">Image URL</label>
+                        <input bind:value={formData.product_image_uri} id="img" placeholder="https://example.com/image.png" class="glass-input w-full text-sm" />
                     </div>
 
                     <div class="col-span-2">
-                        <label class="block text-sm font-bold text-text-primary mb-1" for="cats">Categories</label>
+                        <label class="block text-sm font-semibold text-[var(--color-text-primary)] mb-1.5" for="cats">Categories</label>
                         <div class="relative">
-                            <Tag class="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" size={16} />
-                            <input bind:value={categoryInput} id="cats" placeholder="Sushi, Drinks (comma separated)" class="w-full bg-main border border-glass-border rounded-xl pl-10 pr-4 py-2 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors" />
+                            <Tag class="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)]" size={15} />
+                            <input bind:value={categoryInput} id="cats" placeholder="Sushi, Drinks (comma separated)" class="glass-input w-full pl-10 text-sm" />
                         </div>
                     </div>
                 </div>
 
-                <div class="pt-6 flex gap-3">
+                <div class="pt-3 flex gap-2.5">
                     {#if isEditing}
-                        <button type="button" on:click={deleteProduct} class="px-4 py-2 rounded-xl border border-status-error/30 text-status-error hover:bg-status-error/10 transition-colors font-bold">Delete</button>
+                        <button type="button" on:click={deleteProduct} class="px-4 py-2.5 rounded-xl border border-[var(--status-error)]/30 text-[var(--status-error)] hover:bg-[var(--status-error)]/10 transition-colors font-semibold text-sm">Delete</button>
                     {/if}
                     <div class="flex-1"></div>
-                    <button type="button" on:click={closeModal} class="px-4 py-2 rounded-xl border border-glass-border hover:bg-surface transition-colors font-bold text-text-secondary">Cancel</button>
-                    <button type="submit" disabled={submitting} class="px-6 py-2 rounded-xl bg-primary hover:bg-primary-dark text-text-inverse font-bold transition-colors disabled:opacity-50 shadow-lg shadow-primary/20">
+                    <button type="button" on:click={closeModal} class="px-4 py-2.5 rounded-xl bg-[var(--glass-bg)] border border-[var(--glass-border)] text-[var(--color-text-secondary)] font-semibold text-sm hover:bg-[var(--color-bg-surface)] transition-colors">Cancel</button>
+                    <button type="submit" disabled={submitting} class="glass-button text-sm disabled:opacity-50">
                         {submitting ? 'Saving...' : 'Save Product'}
                     </button>
                 </div>

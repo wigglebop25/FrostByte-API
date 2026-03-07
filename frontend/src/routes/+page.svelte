@@ -1,11 +1,18 @@
 <script lang="ts">
+    /**
+     * Admin Dashboard Page
+     *
+     * Displays real-time analytics including revenue, order counts,
+     * and distribution metrics. Refreshes automatically via WebSocket
+     * events. Restricted to Admin and Cashier roles.
+     */
     import { onMount } from 'svelte';
     import { goto } from '$app/navigation';
     import { ws } from '$lib/stores/websocket';
     import { env } from '$env/dynamic/public';
     import api from '$lib/utils/api';
     import RevenueChart from '$lib/components/RevenueChart.svelte';
-    import { TrendingUp, Users, ShoppingBag, Activity, CheckCircle, Package } from 'lucide-svelte';
+    import { TrendingUp, Users, ShoppingBag, Activity, CheckCircle, Package, DollarSign, Clock } from 'lucide-svelte';
 
     interface Stats {
         total_revenue: number;
@@ -29,6 +36,8 @@
     let activeUsers = 0;
     let revenueData: number[] = [0, 0, 0, 0, 0, 0, 0];
     let revenueLabels: string[] = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    let greeting = 'Good day';
+    let username = '';
 
     onMount(async () => {
         const token = localStorage.getItem('token');
@@ -40,12 +49,18 @@
         }
 
         const user = JSON.parse(userStr);
+        username = user.username || 'User';
         const roles = user.roles?.map((r: any) => r.name.toLowerCase()) || [];
         
         if (roles.includes('customer')) {
             goto("/orders/create");
             return;
         }
+
+        const hour = new Date().getHours();
+        if (hour < 12) greeting = 'Good morning';
+        else if (hour < 17) greeting = 'Good afternoon';
+        else greeting = 'Good evening';
 
         fetchAnalytics();
     });
@@ -84,98 +99,106 @@
     }
 
     $: cards = [
-        { label: 'Total Revenue', value: '$' + (stats.total_revenue || 0).toLocaleString(), icon: TrendingUp, color: 'text-emerald-600', bg: 'bg-emerald-100' },
-        { label: 'Total Orders', value: (stats.total_orders || 0).toString(), icon: Package, color: 'text-blue-600', bg: 'bg-blue-100' },
-        { label: 'Pending Orders', value: (stats.pending_orders || 0).toString(), icon: ShoppingBag, color: 'text-orange-600', bg: 'bg-orange-100' },
-        { label: 'Completed', value: (stats.completed_orders || 0).toString(), icon: CheckCircle, color: 'text-purple-600', bg: 'bg-purple-100' },
+        { label: 'Total Revenue', value: '$' + (stats.total_revenue || 0).toLocaleString(), icon: DollarSign, gradient: 'from-emerald-500 to-teal-600', bg: 'bg-emerald-500/10' },
+        { label: 'Total Orders', value: (stats.total_orders || 0).toString(), icon: Package, gradient: 'from-blue-500 to-indigo-600', bg: 'bg-blue-500/10' },
+        { label: 'Pending', value: (stats.pending_orders || 0).toString(), icon: Clock, gradient: 'from-amber-500 to-orange-600', bg: 'bg-amber-500/10' },
+        { label: 'Completed', value: (stats.completed_orders || 0).toString(), icon: CheckCircle, gradient: 'from-violet-500 to-purple-600', bg: 'bg-violet-500/10' },
     ];
 </script>
 
-<div class="space-y-8">
-    <!-- Header -->
-    <div class="flex items-center justify-between">
+<div class="space-y-6">
+    <!-- Greeting Header -->
+    <div class="flex items-end justify-between">
         <div>
-            <h1 class="text-4xl font-bold tracking-tight text-accent font-serif">Dashboard</h1>
-            <p class="text-text-secondary mt-1">Real-time performance metrics from Azure Backend.</p>
+            <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-[var(--color-text-primary)]">
+                {greeting}, <span class="text-[var(--color-primary)]">{username}</span>
+            </h1>
+            <p class="text-[var(--color-text-secondary)] mt-1 text-sm">Here's what's happening with your restaurant today.</p>
         </div>
-        
-        <div class="glass-card flex items-center gap-2 px-4 py-2 text-sm shadow-sm bg-surface/50">
-            <span class="relative flex h-2.5 w-2.5">
-                <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 {$ws.connected ? 'bg-status-success' : 'bg-status-error'}"></span>
-                <span class="relative inline-flex rounded-full h-2.5 w-2.5 {$ws.connected ? 'bg-status-success' : 'bg-status-error'}"></span>
-            </span>
-            <span class="font-bold {$ws.connected ? 'text-status-success' : 'text-status-error'}">
-                {$ws.connected ? 'LIVE FEED' : 'OFFLINE'}
-            </span>
+        <div class="text-right hidden sm:block">
+            <div class="text-xs font-semibold text-[var(--color-text-secondary)]">
+                {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+            </div>
         </div>
     </div>
 
-    <!-- Stats Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <!-- KPI Stats Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {#each cards as card}
-            <div class="glass-card p-6 hover:shadow-lg transition-all duration-300 border-glass-border">
-                <div class="flex items-center justify-between mb-4">
-                    <span class="text-text-secondary text-[10px] font-bold uppercase tracking-widest">{card.label}</span>
-                    <div class="p-2 rounded-xl {card.bg} shadow-sm">
-                        <svelte:component this={card.icon} size={18} class={card.color} />
+            <div class="glass-card p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 group">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-[var(--color-text-secondary)] text-xs font-semibold uppercase tracking-wider">{card.label}</span>
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br {card.gradient} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                        <svelte:component this={card.icon} size={16} class="text-white" />
                     </div>
                 </div>
-                <div class="text-3xl font-black text-text-primary tracking-tight">{card.value}</div>
+                <div class="text-2xl font-extrabold text-[var(--color-text-primary)] tracking-tight">{card.value}</div>
             </div>
         {/each}
     </div>
 
-    <!-- Charts -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div class="lg:col-span-2 glass-card p-8 border-glass-border">
-            <div class="flex items-center justify-between mb-8">
-                <h3 class="text-xl font-bold text-text-primary font-serif">Revenue Performance</h3>
-                <div class="text-xs font-bold text-text-secondary bg-main px-3 py-1 rounded-full border border-glass-border">
-                    Last 7 Days
+    <!-- Analytics Charts Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Revenue Performance Chart — Live Updates via WebSocket -->
+        <div class="lg:col-span-2 glass-card p-6">
+            <div class="flex items-center justify-between mb-5">
+                <div>
+                    <h3 class="text-lg font-bold text-[var(--color-text-primary)]">Revenue Performance</h3>
+                    <p class="text-xs text-[var(--color-text-secondary)] mt-0.5">Last 7 days</p>
+                </div>
+                <div class="flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-xl bg-[var(--status-info)]/10 text-[var(--status-info)] border border-[var(--status-info)]/20">
+                    <span class="w-1.5 h-1.5 rounded-full bg-[var(--status-info)] animate-pulse"></span>
+                    Live
                 </div>
             </div>
             <RevenueChart data={revenueData} labels={revenueLabels} />
         </div>
 
-        <!-- System Health / Quick Stats -->
-        <div class="glass-card p-8 border-glass-border flex flex-col">
-            <h3 class="text-xl font-bold text-text-primary mb-8 font-serif">Order Distribution</h3>
+        <!-- Order Status Distribution Breakdown -->
+        <div class="glass-card p-6 flex flex-col">
+            <h3 class="text-lg font-bold text-[var(--color-text-primary)] mb-5">Order Distribution</h3>
             
-            <div class="space-y-6 flex-1">
+            <div class="space-y-5 flex-1">
+                <!-- Completed -->
                 <div class="space-y-2">
-                    <div class="flex justify-between text-xs font-bold">
-                        <span class="text-text-secondary">COMPLETED</span>
-                        <span class="text-text-primary">{Math.round((stats.completed_orders / (stats.total_orders || 1)) * 100)}%</span>
+                    <div class="flex justify-between text-xs font-semibold">
+                        <span class="text-[var(--color-text-secondary)]">Completed</span>
+                        <span class="text-[var(--status-success)]">{Math.round((stats.completed_orders / (stats.total_orders || 1)) * 100)}%</span>
                     </div>
-                    <div class="w-full bg-main rounded-full h-2 overflow-hidden border border-glass-border">
-                        <div class="bg-status-success h-full transition-all duration-1000" style="width: {(stats.completed_orders / (stats.total_orders || 1)) * 100}%"></div>
+                    <div class="w-full bg-[var(--glass-bg)] rounded-full h-2.5 overflow-hidden border border-[var(--glass-border-subtle)]">
+                        <div class="bg-gradient-to-r from-emerald-400 to-emerald-600 h-full rounded-full transition-all duration-1000 ease-out" style="width: {(stats.completed_orders / (stats.total_orders || 1)) * 100}%"></div>
                     </div>
                 </div>
 
+                <!-- Pending -->
                 <div class="space-y-2">
-                    <div class="flex justify-between text-xs font-bold">
-                        <span class="text-text-secondary">PENDING</span>
-                        <span class="text-text-primary">{Math.round((stats.pending_orders / (stats.total_orders || 1)) * 100)}%</span>
+                    <div class="flex justify-between text-xs font-semibold">
+                        <span class="text-[var(--color-text-secondary)]">Pending</span>
+                        <span class="text-[var(--status-warning)]">{Math.round((stats.pending_orders / (stats.total_orders || 1)) * 100)}%</span>
                     </div>
-                    <div class="w-full bg-main rounded-full h-2 overflow-hidden border border-glass-border">
-                        <div class="bg-status-warning h-full transition-all duration-1000" style="width: {(stats.pending_orders / (stats.total_orders || 1)) * 100}%"></div>
+                    <div class="w-full bg-[var(--glass-bg)] rounded-full h-2.5 overflow-hidden border border-[var(--glass-border-subtle)]">
+                        <div class="bg-gradient-to-r from-amber-400 to-amber-600 h-full rounded-full transition-all duration-1000 ease-out" style="width: {(stats.pending_orders / (stats.total_orders || 1)) * 100}%"></div>
                     </div>
                 </div>
 
+                <!-- Cancelled -->
                 <div class="space-y-2">
-                    <div class="flex justify-between text-xs font-bold">
-                        <span class="text-text-secondary">CANCELLED</span>
-                        <span class="text-text-primary">{Math.round((stats.cancelled_orders / (stats.total_orders || 1)) * 100)}%</span>
+                    <div class="flex justify-between text-xs font-semibold">
+                        <span class="text-[var(--color-text-secondary)]">Cancelled</span>
+                        <span class="text-[var(--status-error)]">{Math.round((stats.cancelled_orders / (stats.total_orders || 1)) * 100)}%</span>
                     </div>
-                    <div class="w-full bg-main rounded-full h-2 overflow-hidden border border-glass-border">
-                        <div class="bg-status-error h-full transition-all duration-1000" style="width: {(stats.cancelled_orders / (stats.total_orders || 1)) * 100}%"></div>
+                    <div class="w-full bg-[var(--glass-bg)] rounded-full h-2.5 overflow-hidden border border-[var(--glass-border-subtle)]">
+                        <div class="bg-gradient-to-r from-red-400 to-red-600 h-full rounded-full transition-all duration-1000 ease-out" style="width: {(stats.cancelled_orders / (stats.total_orders || 1)) * 100}%"></div>
                     </div>
                 </div>
             </div>
 
-            <div class="mt-8 pt-6 border-t border-glass-border text-center">
-                <div class="text-sm font-bold text-text-secondary">AVG ORDER VALUE</div>
-                <div class="text-2xl font-black text-primary">${(stats.average_order_value || 0).toFixed(2)}</div>
+            <!-- Avg Order Value -->
+            <div class="mt-6 pt-5 border-t border-[var(--glass-border-subtle)]">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider">Avg Order Value</span>
+                    <span class="text-xl font-extrabold text-[var(--color-primary)]">${(stats.average_order_value || 0).toFixed(2)}</span>
+                </div>
             </div>
         </div>
     </div>
