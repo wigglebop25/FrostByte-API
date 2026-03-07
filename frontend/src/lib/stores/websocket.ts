@@ -1,3 +1,13 @@
+/**
+ * WebSocket Store — Real-Time Communication Layer
+ *
+ * Manages a persistent WebSocket connection to the backend with automatic
+ * reconnection, keep-alive ping frames, and reactive connection state.
+ * Designed for the FrostByte real-time order monitoring system.
+ *
+ * @module stores/websocket
+ */
+
 import { writable } from "svelte/store";
 
 export function createWebSocketStore() {
@@ -13,11 +23,34 @@ export function createWebSocketStore() {
     let urlRef = "";
     let tokenRef = "";
 
+    /** Clears all active timers to prevent orphaned intervals. */
+    function cleanup() {
+        if (pingInterval) clearInterval(pingInterval);
+        if (reconnectTimeout) clearTimeout(reconnectTimeout);
+        pingInterval = null;
+        reconnectTimeout = null;
+    }
+
+    /**
+     * Establishes a WebSocket connection to the backend.
+     * Safely handles duplicate calls, stale sockets, and automatic reconnection.
+     */
     function connect(url: string, token: string) {
-        if (socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)) return;
+        if (!token) return;
 
         urlRef = url;
         tokenRef = token;
+
+        // Allow connection only if no socket exists or the current one is closed/closing.
+        if (socket) {
+            if (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING) return;
+            // Clean up stale socket in CLOSING or CLOSED state before reconnecting.
+            socket.onclose = null;
+            socket.onerror = null;
+            socket = null;
+        }
+
+        cleanup();
 
         try {
             const wsUrl = `${url}?token=${token}`;
@@ -28,8 +61,7 @@ export function createWebSocketStore() {
                 update(s => ({ ...s, connected: true, error: null }));
                 console.log("WS: Connected");
 
-                if (reconnectTimeout) clearTimeout(reconnectTimeout);
-
+                // Send application-level keep-alive pings every 30 seconds.
                 pingInterval = setInterval(() => {
                     if (socket?.readyState === WebSocket.OPEN) {
                         socket.send(JSON.stringify({ type: 'ping' }));
@@ -48,10 +80,18 @@ export function createWebSocketStore() {
 
             socket.onclose = (e) => {
                 update(s => ({ ...s, connected: false }));
-                console.log("WS: Disconnected", e.reason);
+                console.log("WS: Disconnected", e.code, e.reason);
                 cleanup();
-                
-                reconnectTimeout = setTimeout(() => connect(urlRef, tokenRef), 5000);
+                socket = null;
+
+                // Use the latest token from localStorage in case it was refreshed.
+                reconnectTimeout = setTimeout(() => {
+                    const freshToken = typeof localStorage !== 'undefined' 
+                        ? localStorage.getItem('token') || tokenRef 
+                        : tokenRef;
+                    tokenRef = freshToken;
+                    connect(urlRef, freshToken);
+                }, 5000);
             };
 
             socket.onerror = (e) => {
@@ -62,13 +102,15 @@ export function createWebSocketStore() {
 
         } catch (e) {
             console.error("WS: Init Error", e);
-            reconnectTimeout = setTimeout(() => connect(urlRef, tokenRef), 5000);
+            socket = null;
+            reconnectTimeout = setTimeout(() => {
+                const freshToken = typeof localStorage !== 'undefined'
+                    ? localStorage.getItem('token') || tokenRef
+                    : tokenRef;
+                tokenRef = freshToken;
+                connect(urlRef, freshToken);
+            }, 5000);
         }
-    }
-
-    function cleanup() {
-        if (pingInterval) clearInterval(pingInterval);
-        pingInterval = null;
     }
 
     return {
@@ -81,12 +123,12 @@ export function createWebSocketStore() {
         },
         disconnect: () => {
             cleanup();
-            if (reconnectTimeout) clearTimeout(reconnectTimeout);
             if (socket) {
-                socket.onclose = null; // Prevent reconnect loop on manual disconnect
+                socket.onclose = null;
                 socket.close();
                 socket = null;
             }
+            update(s => ({ ...s, connected: false }));
         }
     };
 }
