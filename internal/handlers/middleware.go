@@ -39,8 +39,8 @@ func (rl *rateLimiter) allow(ip string) bool {
 	rl.mu.Lock()
 	defer rl.mu.Unlock()
 
-	rate := 1.0 // 1 request per second (average)
-	burst := 20.0
+	rate := 10.0 // 10 requests per second (sustained)
+	burst := 50.0
 	now := time.Now()
 
 	v, exists := rl.visitors[ip]
@@ -65,9 +65,24 @@ func (rl *rateLimiter) allow(ip string) bool {
 	return false
 }
 
+// clientIP extracts the real client IP from reverse-proxy headers,
+// falling back to RemoteAddr when accessed directly.
+func clientIP(r *http.Request) string {
+	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
+		// X-Forwarded-For may contain a chain: "client, proxy1, proxy2"
+		if ip := strings.TrimSpace(strings.Split(xff, ",")[0]); ip != "" {
+			return ip
+		}
+	}
+	if xri := r.Header.Get("X-Real-Ip"); xri != "" {
+		return strings.TrimSpace(xri)
+	}
+	return strings.Split(r.RemoteAddr, ":")[0]
+}
+
 func RateLimitMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ip := strings.Split(r.RemoteAddr, ":")[0]
+		ip := clientIP(r)
 		if !limiter.allow(ip) {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusTooManyRequests)
