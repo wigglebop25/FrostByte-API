@@ -18,6 +18,9 @@
         total_revenue: number;
         total_orders: number;
         pending_orders: number;
+        accepted_orders: number;
+        cooking_orders: number;
+        ready_orders: number;
         completed_orders: number;
         cancelled_orders: number;
         average_order_value: number;
@@ -28,6 +31,9 @@
         total_revenue: 0,
         total_orders: 0,
         pending_orders: 0,
+        accepted_orders: 0,
+        cooking_orders: 0,
+        ready_orders: 0,
         completed_orders: 0,
         cancelled_orders: 0,
         average_order_value: 0
@@ -160,36 +166,69 @@
         <div class="glass-card p-6 flex flex-col">
             <h3 class="text-lg font-bold text-[var(--color-text-primary)] mb-5">Order Distribution</h3>
             
-            <div class="space-y-5 flex-1">
+            <div class="space-y-4 flex-1">
                 <!-- Completed -->
-                <div class="space-y-2">
+                <div class="space-y-1.5">
                     <div class="flex justify-between text-xs font-semibold">
                         <span class="text-[var(--color-text-secondary)]">Completed</span>
-                        <span class="text-[var(--status-success)]">{Math.round((stats.completed_orders / (stats.total_orders || 1)) * 100)}%</span>
+                        <span class="text-emerald-500">{Math.round((stats.completed_orders / (stats.total_orders || 1)) * 100)}%</span>
                     </div>
-                    <div class="w-full bg-[var(--glass-bg)] rounded-full h-2.5 overflow-hidden border border-[var(--glass-border-subtle)]">
+                    <div class="w-full bg-[var(--glass-bg)] rounded-full h-2 overflow-hidden border border-[var(--glass-border-subtle)]">
                         <div class="bg-gradient-to-r from-emerald-400 to-emerald-600 h-full rounded-full transition-all duration-1000 ease-out" style="width: {(stats.completed_orders / (stats.total_orders || 1)) * 100}%"></div>
                     </div>
                 </div>
 
+                <!-- Ready -->
+                <div class="space-y-1.5">
+                    <div class="flex justify-between text-xs font-semibold">
+                        <span class="text-[var(--color-text-secondary)]">Ready</span>
+                        <span class="text-blue-500">{Math.round((stats.ready_orders / (stats.total_orders || 1)) * 100)}%</span>
+                    </div>
+                    <div class="w-full bg-[var(--glass-bg)] rounded-full h-2 overflow-hidden border border-[var(--glass-border-subtle)]">
+                        <div class="bg-gradient-to-r from-blue-400 to-blue-600 h-full rounded-full transition-all duration-1000 ease-out" style="width: {(stats.ready_orders / (stats.total_orders || 1)) * 100}%"></div>
+                    </div>
+                </div>
+
+                <!-- Cooking -->
+                <div class="space-y-1.5">
+                    <div class="flex justify-between text-xs font-semibold">
+                        <span class="text-[var(--color-text-secondary)]">Cooking</span>
+                        <span class="text-orange-500">{Math.round((stats.cooking_orders / (stats.total_orders || 1)) * 100)}%</span>
+                    </div>
+                    <div class="w-full bg-[var(--glass-bg)] rounded-full h-2 overflow-hidden border border-[var(--glass-border-subtle)]">
+                        <div class="bg-gradient-to-r from-orange-400 to-orange-600 h-full rounded-full transition-all duration-1000 ease-out" style="width: {(stats.cooking_orders / (stats.total_orders || 1)) * 100}%"></div>
+                    </div>
+                </div>
+
+                <!-- Accepted -->
+                <div class="space-y-1.5">
+                    <div class="flex justify-between text-xs font-semibold">
+                        <span class="text-[var(--color-text-secondary)]">Accepted</span>
+                        <span class="text-indigo-500">{Math.round((stats.accepted_orders / (stats.total_orders || 1)) * 100)}%</span>
+                    </div>
+                    <div class="w-full bg-[var(--glass-bg)] rounded-full h-2 overflow-hidden border border-[var(--glass-border-subtle)]">
+                        <div class="bg-gradient-to-r from-indigo-400 to-indigo-600 h-full rounded-full transition-all duration-1000 ease-out" style="width: {(stats.accepted_orders / (stats.total_orders || 1)) * 100}%"></div>
+                    </div>
+                </div>
+
                 <!-- Pending -->
-                <div class="space-y-2">
+                <div class="space-y-1.5">
                     <div class="flex justify-between text-xs font-semibold">
                         <span class="text-[var(--color-text-secondary)]">Pending</span>
-                        <span class="text-[var(--status-warning)]">{Math.round((stats.pending_orders / (stats.total_orders || 1)) * 100)}%</span>
+                        <span class="text-amber-500">{Math.round((stats.pending_orders / (stats.total_orders || 1)) * 100)}%</span>
                     </div>
-                    <div class="w-full bg-[var(--glass-bg)] rounded-full h-2.5 overflow-hidden border border-[var(--glass-border-subtle)]">
+                    <div class="w-full bg-[var(--glass-bg)] rounded-full h-2 overflow-hidden border border-[var(--glass-border-subtle)]">
                         <div class="bg-gradient-to-r from-amber-400 to-amber-600 h-full rounded-full transition-all duration-1000 ease-out" style="width: {(stats.pending_orders / (stats.total_orders || 1)) * 100}%"></div>
                     </div>
                 </div>
 
                 <!-- Cancelled -->
-                <div class="space-y-2">
+                <div class="space-y-1.5">
                     <div class="flex justify-between text-xs font-semibold">
                         <span class="text-[var(--color-text-secondary)]">Cancelled</span>
-                        <span class="text-[var(--status-error)]">{Math.round((stats.cancelled_orders / (stats.total_orders || 1)) * 100)}%</span>
+                        <span class="text-red-500">{Math.round((stats.cancelled_orders / (stats.total_orders || 1)) * 100)}%</span>
                     </div>
-                    <div class="w-full bg-[var(--glass-bg)] rounded-full h-2.5 overflow-hidden border border-[var(--glass-border-subtle)]">
+                    <div class="w-full bg-[var(--glass-bg)] rounded-full h-2 overflow-hidden border border-[var(--glass-border-subtle)]">
                         <div class="bg-gradient-to-r from-red-400 to-red-600 h-full rounded-full transition-all duration-1000 ease-out" style="width: {(stats.cancelled_orders / (stats.total_orders || 1)) * 100}%"></div>
                     </div>
                 </div>
