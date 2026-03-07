@@ -20,9 +20,9 @@
     };
 </script>
 
-<div class="glass-card group h-full flex flex-col overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+<div class="glass-card group h-full flex flex-col overflow-hidden hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
     <!-- Product Image & Overlay Badges -->
-    <div class="relative aspect-[4/3] overflow-hidden bg-[var(--color-bg-surface)]">
+    <div class="relative aspect-[3/2] overflow-hidden bg-[var(--color-bg-surface)]">
         <img 
             src={getProductImageUrl(product)} 
             alt={product.name} 
@@ -32,15 +32,15 @@
         <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
         
         <!-- Price badge -->
-        <div class="absolute top-3 right-3 px-3 py-1.5 rounded-xl bg-white/90 dark:bg-black/70 backdrop-blur-md text-sm font-bold text-[var(--color-primary)] shadow-lg">
+        <div class="absolute top-2 right-2 px-2.5 py-1 rounded-lg bg-white/90 dark:bg-black/70 backdrop-blur-md text-xs font-bold text-[var(--color-primary)] shadow-lg">
             {formatPrice(product.price)}
         </div>
 
         <!-- Category pills -->
         {#if product.categories && product.categories.length > 0}
-            <div class="absolute bottom-3 left-3 flex gap-1.5">
+            <div class="absolute bottom-2 left-2 flex gap-1">
                 {#each product.categories.slice(0, 2) as cat}
-                    <span class="px-2.5 py-1 bg-white/20 backdrop-blur-md border border-white/30 rounded-lg text-[10px] font-bold text-white uppercase tracking-wider">
+                    <span class="px-2 py-0.5 bg-white/20 backdrop-blur-md border border-white/30 rounded-md text-[9px] font-bold text-white uppercase tracking-wider">
                         {typeof cat === 'string' ? cat : cat.name}
                     </span>
                 {/each}
@@ -49,17 +49,17 @@
     </div>
 
     <!-- Product Details & Add-to-Cart Action -->
-    <div class="p-4 flex flex-col flex-1">
-        <h3 class="font-bold text-base text-[var(--color-text-primary)] leading-tight line-clamp-1 mb-1">{product.name}</h3>
-        <p class="text-[var(--color-text-secondary)] text-sm line-clamp-2 mb-4 flex-1 opacity-80">
+    <div class="p-3 flex flex-col flex-1">
+        <h3 class="font-bold text-sm text-[var(--color-text-primary)] leading-tight line-clamp-1 mb-0.5">{product.name}</h3>
+        <p class="text-[var(--color-text-secondary)] text-xs line-clamp-1 mb-2 flex-1 opacity-80">
             {product.description}
         </p>
         
         <button 
             on:click|stopPropagation={() => onAdd(product)}
-            class="w-full py-2.5 bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-[var(--color-text-inverse)] rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg active:scale-[0.97] text-sm"
+            class="w-full py-2 bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-[var(--color-text-inverse)] rounded-xl font-bold flex items-center justify-center gap-1.5 transition-all shadow-md hover:shadow-lg active:scale-[0.97] text-xs"
         >
-            <ShoppingCart size={16} />
+            <ShoppingCart size={14} />
             <span>Add to Order</span>
         </button>
     </div>
