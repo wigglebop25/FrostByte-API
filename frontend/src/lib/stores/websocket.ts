@@ -158,7 +158,7 @@ export function createWebSocketStore() {
 
             socket.onopen = () => {
                 retryCount = 0; // Reset backoff on successful connection.
-                update(s => ({ ...s, connected: true, error: null }));
+                update(s => ({ ...s, connected: true, error: null, data: null }));
                 console.log("WS: Connected");
 
                 // Send application-level keep-alive pings every 30 seconds.
@@ -179,7 +179,7 @@ export function createWebSocketStore() {
             };
 
             socket.onclose = (e) => {
-                update(s => ({ ...s, connected: false }));
+                update(s => ({ ...s, connected: false, data: null }));
                 console.log("WS: Disconnected", e.code, e.reason);
                 cleanup();
                 socket = null;

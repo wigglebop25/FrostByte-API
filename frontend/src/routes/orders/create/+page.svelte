@@ -93,7 +93,7 @@
     $: cartTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 </script>
 
-<div class="h-[calc(100dvh-6rem)] sm:h-[calc(100dvh-7rem)] lg:h-[calc(100dvh-8rem)] flex flex-col lg:flex-row gap-3 lg:gap-4 overflow-hidden">
+<div class="h-[calc(100dvh-7rem)] sm:h-[calc(100dvh-8rem)] lg:h-[calc(100dvh-9rem)] flex flex-col lg:flex-row gap-3 lg:gap-4 overflow-hidden">
     <!-- Product Browsing Section -->
     <div class="flex-[3] lg:flex-1 flex flex-col min-w-0 min-h-0">
         <!-- Header -->

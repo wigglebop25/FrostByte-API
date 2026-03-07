@@ -34,6 +34,7 @@
     };
     
     let activeUsers = 0;
+    let lastWsTs = 0;
     let revenueData: number[] = [0, 0, 0, 0, 0, 0, 0];
     let revenueLabels: string[] = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
     let greeting = 'Good day';
@@ -84,7 +85,8 @@
         }
     }
 
-    $: if ($ws.data) {
+    $: if ($ws.data && $ws.data._ts !== lastWsTs) {
+        lastWsTs = $ws.data._ts;
         handleMessage($ws.data);
     }
 

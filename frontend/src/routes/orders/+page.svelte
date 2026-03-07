@@ -27,6 +27,7 @@
     let selectedOrder: Order | null = null;
     let showDetailsModal = false;
     let updatingId: number | null = null;
+    let lastWsTs = 0;
 
     async function fetchOrders() {
         loading = true;
@@ -115,7 +116,8 @@
         fetchOrders();
     });
 
-    $: if ($ws.data && ($ws.data.event === 'NEW_ORDER' || $ws.data.event === 'ORDER_UPDATED')) {
+    $: if ($ws.data && $ws.data._ts !== lastWsTs && ($ws.data.event === 'NEW_ORDER' || $ws.data.event === 'ORDER_UPDATED')) {
+        lastWsTs = $ws.data._ts;
         if ($ws.data.event === 'ORDER_UPDATED' && $ws.data.data?.order_id) {
             const idx = orders.findIndex(o => o.order_id === $ws.data.data.order_id);
             if (idx !== -1) {
