@@ -132,12 +132,20 @@ func (h *OrderHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Check if user is the owner
+	// Check if user is the owner or has Admin/Cashier role
 	if order.UserID != userID {
-		// Security Check: Ensure user owns the order.
-		// Admins should use the Admin-specific routes.
-		http.Error(w, "Forbidden: You do not have access to this order", http.StatusForbidden)
-		return
+		roles, _ := GetRolesFromContext(r.Context())
+		isStaff := false
+		for _, role := range roles {
+			if role == "Admin" || role == "Cashier" {
+				isStaff = true
+				break
+			}
+		}
+		if !isStaff {
+			http.Error(w, "Forbidden: You do not have access to this order", http.StatusForbidden)
+			return
+		}
 	}
 
 	json.NewEncoder(w).Encode(order)
@@ -282,8 +290,10 @@ func (h *OrderHandler) GetDashboardAnalytics(w http.ResponseWriter, r *http.Requ
 	totalOrders := summary["total_orders"].(int64)
 
 	pendingOrders := statusCounts["PENDING"]
+	acceptedOrders := statusCounts["ACCEPTED"]
+	cookingOrders := statusCounts["COOKING"]
+	readyOrders := statusCounts["READY"]
 	completedOrders := statusCounts["COMPLETED"]
-
 	cancelledOrders := statusCounts["CANCELLED"]
 
 	// Calculate Average Order Value
@@ -302,6 +312,9 @@ func (h *OrderHandler) GetDashboardAnalytics(w http.ResponseWriter, r *http.Requ
 		"total_revenue":       totalRevenue,
 		"total_orders":        totalOrders,
 		"pending_orders":      pendingOrders,
+		"accepted_orders":     acceptedOrders,
+		"cooking_orders":      cookingOrders,
+		"ready_orders":        readyOrders,
 		"completed_orders":    completedOrders,
 		"cancelled_orders":    cancelledOrders,
 		"average_order_value": avgOrderValue,
